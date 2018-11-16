@@ -1,0 +1,115 @@
+/*
+ Name:		lab9.c
+ Purpose:	Lab 9
+            CS254
+ Author:  	Ben Davidson
+            104924033
+ Date:    	0718-2018 11:35
+*/
+
+#include <stdio.h>
+#include <math.h>
+#include <time.h>
+#include <string.h>
+#include "../sharedFunctions.h"
+
+#define LOWER 0
+#define UPPER 1000
+#define DEBUG 1
+
+struct node 
+{
+    int value;
+
+};
+
+/** Prototypes **/
+void heapify (int a[], int i, int j, int n);
+void buildHeap  (int a[], int n);
+void heapSort (int a[], int n);
+
+int main (int argc, char * argv[])
+{
+    if (argv[1] == NULL) 
+    {
+        printf("usage: lab8 size_of_array\nSpecify the size of the array as a command line argument.\n");
+        return 0;
+    }
+
+    /** Setup the header and the random array **/
+    // header("Lab 9", "July 17, 2018");
+    char * finish;
+    int arraySize = strtol(argv[1], &finish, 10);
+    // int ra[arraySize];
+    // RandomArray(ra, arraySize, LOWER, UPPER); 
+    int ra[7] = {12, 10, 20, 19, 8, 7, 15};
+    printf("ra[]:   ");
+    printArray(ra, arraySize);
+
+    printf("\n");
+
+    heapSort(ra, arraySize-1);
+
+    printf("sorted: ");
+    printArray(ra, arraySize);
+
+    return 0;
+}
+
+void heapSort (int a[], int n)
+{
+    buildHeap (a, n);
+    printf("1st bH: ");
+    printArray(a, n+1);
+    int i = n-1;
+    while (i > 1)
+    {
+        swap(&a[0],&a[i]);
+        heapify(a, 0, i, i);
+        i--;
+    }
+}
+
+void buildHeap (int a[], int n)
+{
+    int i = n-1;
+    // printf("i: %d\n", i);
+
+    while (i >= 0)
+    {
+        printf("bH i: %d\n", i);
+        heapify(a, 0, i, n);
+        // heapify(a, i, n, n);
+        // heapify(a, i-1, i-2, i-1);
+        // heapify(a, i, n-1, n);
+        i--;
+    }
+}
+
+void heapify (int a[], int i, int j, int n)
+{
+    int k;
+
+    if (2 * i +1 >= n) // if a child return 
+    {
+        printf("return i %d\n", i);
+        return;
+    }
+
+    if (a[2 * i + 1] > a[2 * i + 2]) // if left is greater than right
+    {
+        k = 2 * i + 1;
+    }
+    else
+    {
+        k = 2 * i + 2;
+    }
+
+    if (a[i] < a[k]) // if root is less than larger child swap
+    {
+        swap(&a[i], &a[k]);
+    }
+
+    heapify(a, k, j, n);
+
+}

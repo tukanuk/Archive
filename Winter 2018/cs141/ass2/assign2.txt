@@ -1,0 +1,586 @@
+Script started on Wed 28 Feb 2018 12:17:52 PM EST
+]0;david11n@ltsp-amd64-bravo: ~/github/Scratch_Files/cs141/ass2[01;32mdavid11n@ltsp-amd64-bravo[00m:[01;34m~/github/Scratch_Files/cs141/ass2[00m$ cat assign2.c
+/* Name: assign2.c
+   Purpose: Assigmnent 2: 2D Array Manipulation
+   Author: Ben Davidson
+           104924033
+           CS141
+   Date: 0224-2018 13:14 
+*/
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <time.h>
+#include <string.h>
+#include <stdbool.h>
+
+#define ROW 20
+#define COL 20
+
+#define RMIN 0
+#define RMAX 999
+
+/*** Prototypes ***/
+
+void PopulateArray2DUnique(int A[][COL], unsigned int rowsize, unsigned int colsize, int min, int max);
+void Display2DArray(int A[][COL], unsigned int rowsize, unsigned int colsize);
+int FindLargest(int A[][COL], unsigned int rowsize, unsigned int colsize);
+int FindColSum(int A[][COL], unsigned int rowsize, unsigned int colsize, unsigned int col_to_sum);
+void Sort2DArray(int A[][COL], unsigned int rowsize, unsigned int colsize);
+int CopyArray2D(int A[][COL], int B[][COL], unsigned int rowsize, unsigned int colsize);
+int CopyArray2DSpiral(int A[][COL], int B[][COL], int rowsize, int colsize);
+
+int main( int argc, char *argv[] )
+{
+    // check for correct number of arguments 
+    if (argc != 6)
+    {
+        printf("usage: assign2 rowsize, colsize, random min, random max, column to sum\n");
+    } 
+    else
+    {
+
+        // take the command line arguments and make them variables
+        unsigned int row = atoi(argv[1]);
+        unsigned int col = atoi(argv[2]);
+        unsigned int rMin = atoi(argv[3]);
+        unsigned int rMax = atoi(argv[4]);
+        unsigned int colToSum = atoi(argv[5]);
+
+        //printf("row %d, col %d, rMin %d, rMax %d, colToSum %d\n", row, col, rMin, rMax, colToSum);
+
+        // check to make sure row and col do not exceed ROW and COL
+        if (row > ROW || col > COL)
+        {
+            printf("Row must be less then %d. Columns must be less then %d.\n", ROW, COL);
+        }
+        // check to make sure there are enough random numbers 
+        else if ( row * col > rMax - rMin + 1)
+        {
+            printf("Shrink array size or increase random number range\n");    
+        }
+        else
+        {     
+            //initialize arrays
+            int array[ROW][COL];
+            int array2[ROW][COL];
+
+            printf("\nPopulate Array with unique random integers between %d and %d...\n", rMin, rMax);
+            PopulateArray2DUnique(array, row, col, rMin, rMax);
+            
+            printf("DisplayArray2D\n");
+            Display2DArray(array, row, col);
+            
+            printf("FindLargest: %d\n", FindLargest(array, row, col));
+            
+            printf("FindColSum of col %d: %d\n", colToSum, FindColSum(array, row, col, colToSum));
+            
+            printf("Sort2DArray followed by DisplayArray2D:\n");
+            Sort2DArray(array, row, col);
+            Display2DArray(array, row, col);
+            
+            printf("CopyArray2D from A to B, then Display B:\n");
+            CopyArray2D(array, array2, row, col);
+            Display2DArray(array2, row, col);
+
+            printf("CopyArray2DSpiral from A to B, then Display B:\n");
+            CopyArray2DSpiral(array, array2, row, col);
+            Display2DArray(array2, row, col);
+            
+            return 1;
+        }
+    }
+}
+
+/*
+ *	PopulateArray2DUnique: populate a 2D array with random unique values in the given range
+ *		INPUT: a 2D array, the rows and columns of the array and a min and max
+ *             for the random range
+ *		OUTPUT:  an array of random numbers
+*/
+void PopulateArray2DUnique(int A[][COL], unsigned int rowsize, unsigned int colsize, int min, int max)
+{
+    int current_r; // counter to track the current row
+    int current_c; // counter to track the current column
+
+    bool randomTracker[RMAX] = {false}; // tracks the used random numbers
+    int check; // loop condition 
+    int ran; // the random number
+
+    int counter = 0;
+    
+    srand(time(NULL));
+
+    for (current_r = 0; current_r < rowsize; current_r++)
+    {
+        for (current_c = 0; current_c < colsize; current_c++)
+        {
+            check = 0;
+            do 
+            {
+                ran = rand() % (max - min + 1) + min;  // generates random number
+                
+                if (!randomTracker[ran]) // check for random number beign unique
+                {
+                    check = 1;
+                    randomTracker[ran] = true;
+                
+                }
+            } while (check == 0);
+        
+            A[current_r][current_c] = ran; // places random number in array
+        }
+    }
+}
+
+
+/*
+ *	Display2DArray: prints a 2D array
+ *		INPUT: The array to print and its number of rows and columns
+ *		OUTPUT: An 2D array
+*/
+void Display2DArray(int A[][COL], unsigned int rowsize, unsigned int colsize)
+{
+    int current_r; // counter to track the current row
+    int current_c; // counter to track the current column
+
+    for (current_r = 0; current_r < rowsize; current_r++)
+    {
+        for (current_c = 0; current_c < colsize; current_c++)
+        {
+            printf("%4d", A[current_r][current_c]);
+        }
+
+        printf("\n");
+    }
+}
+
+/*
+ *	FindLargest: Finds the largest value in the array
+ *		INPUT: An array, it's number of rows and columns
+ *		OUTPUT: Returns the largest value found
+*/
+int FindLargest(int A[][COL], unsigned int rowsize, unsigned int colsize)
+{
+
+    int current_r; // counter to track the current row
+    int current_c; // counter to track the current column
+
+    int largest = 0; //holds the largest found int
+
+    for (current_r = 0; current_r < rowsize; current_r++)
+    {
+        for (current_c = 0; current_c < colsize; current_c++)
+        {
+            // checks if the current array position is larger then the currenet largest
+            if (A[current_r][current_c] > largest) 
+            {
+                largest = A[current_r][current_c];
+            }
+        }
+    }
+
+    return largest;
+}
+
+/*
+ *	FindColSum: Find the sum of the given column of the given array
+ *		INPUT: A 2D array, it's number of rows and columns and the column number to sum
+ *		OUTPUT: the sum of the given column
+*/
+int FindColSum(int A[][COL], unsigned int rowsize, unsigned int colsize, unsigned int col_to_sum)
+{
+    int sum = 0; // the sum of the column
+
+    for (int r = 0 ; r < rowsize ; r++)
+    {
+        sum += A[r][col_to_sum]; //add the current array positon to the sum
+    }
+    return sum;
+}
+
+/*
+ *	Sort2DArray: Sorts a 2D array from smallest integer to largest
+ *		INPUT: An array, number of rows and colums
+ *		OUTPUT: a sorted array
+*/
+void Sort2DArray(int A[][COL], unsigned int rowsize, unsigned int colsize)
+{
+    int current_r; // counter to track the current row
+    int current_c; // counter to track the current column
+    int sr;        // sublist row index
+    int sc;        // sublist column index
+    int minR;      // row index where min was found
+    int minC;      // column index where min was found
+
+    int tmp; // tmp swapping
+
+    for (current_r = 0; current_r < rowsize; current_r++)
+    {
+        for (current_c = 0; current_c < colsize; current_c++)
+        {
+            // the current element is the smallest
+            minR = current_r;
+            minC = current_c;
+
+            // search the sublist for a new min
+            sc = current_c + 1;
+            for (sr = current_r; sr < rowsize; sr++, sc = 0)
+            {
+                for (; sc < colsize; sc++)
+                {
+                    //find a new min
+                    if (A[sr][sc] < A[minR][minC])
+                    {
+                        minR = sr;
+                        minC = sc;
+                    }
+                }
+            }
+
+            // swap min and current
+            tmp = A[current_r][current_c];
+            A[current_r][current_c] = A[minR][minC];
+            A[minR][minC] = tmp;
+        }
+    }
+}
+
+/*
+ *	CopyArray2D: copys the first array into the second array
+ *		INPUT: the source array, the destinatioon array, the number of rows and columns of the arrays
+ *		OUTPUT: return 1 for sucess and a copied array
+*/
+int CopyArray2D(int A[][COL], int B[][COL], unsigned int rowsize, unsigned int colsize)
+{
+    for (int r = 0 ; r < rowsize ; r++)
+    {
+        for (int c = 0 ; c <colsize ; c++)
+        {
+            B[r][c] = A[r][c]; // copies the current positon of A into the matching position of B
+        }
+    }
+
+    return 1;
+}
+
+/*
+ *	CopyArray2DSpirial: copies the first array into the second array in a clockwise spiral pattern
+ *		INPUT:  a sorted source array, the destination array, the number of rows and columns of the arrays.
+                will not work with an unsorted array
+ *		OUTPUT:  return 1 at complateion and a copied and sorted 2D array  
+*/
+int CopyArray2DSpiral(int A[][COL], int B[][COL], int rowsize, int colsize)
+{
+    
+    int rowEnd = rowsize; // last row
+    int rowStart = 0; // first row
+    int colEnd = colsize; // last column
+    int colStart = 0; // first column
+    int lastValue = A[rowsize - 1][colsize -1]; //FindLargest(A, rowsize, colsize); // the last value in the sorted array
+    
+    /* copies array A into a rowsize * colsize sized array 
+       allows for easy pointer increment through the array */
+    int tempA[rowsize][colsize];
+    for (int r = 0 ; r < rowsize ; r++)
+    {
+        for (int c = 0 ; c <colsize ; c++)
+        {
+            tempA[r][c] = A[r][c];
+        }
+    }
+
+    // allows ptrA to increment through the array
+    int *ptrA = *tempA;
+
+    while (rowStart < rowEnd && colStart < colEnd )
+    {
+        //top
+        for (int c = colStart ; c < colEnd ;  c++)
+        {
+            B[rowStart][c] = *ptrA;
+            // checks for last value. 
+            // necessary for end cases where a column also finishes a row or
+            // a row finihses a column
+            if (*ptrA == lastValue)
+            { 
+                //printf("*1\n"); 
+                return 1;
+            }
+            ptrA++;
+        }
+        
+        ++rowStart;
+        --colEnd;
+        
+        //right
+        for (int r = rowStart ; r < rowEnd ; ++r)
+        {
+            B[r][colEnd] = *ptrA;
+            // checks for last value. 
+            if (*ptrA == lastValue) //return 1;
+            { 
+                //printf("*2\n"); 
+                return 1;
+            }
+            ptrA++;
+        }
+        
+        --rowEnd;
+           
+        //bottom
+        for (int c = colEnd ; c > colStart ; --c)
+        {
+            B[rowEnd][c-1] = *ptrA;
+            // checks for last value. 
+            if (*ptrA == lastValue) //return 1;
+            { 
+                //printf("*3\n"); 
+                return 1;
+            }
+            ptrA++;
+        }
+        
+        //left
+        for (int r = rowEnd-1 ; r > rowStart - 1; --r)
+        {
+            B[r][colStart]= *ptrA;
+            // checks for last value. 
+            if (*ptrA == lastValue) //return 1;
+            { 
+                //printf("*4\n"); 
+                return 1;
+            }
+            ptrA++;
+        }
+        ++colStart;
+    }
+
+    return 1;
+}
+]0;david11n@ltsp-amd64-bravo: ~/github/Scratch_Files/cs141/ass2[01;32mdavid11n@ltsp-amd64-bravo[00m:[01;34m~/github/Scratch_Files/cs141/ass2[00m$ c  [K[Kc assign2.c
+]0;david11n@ltsp-amd64-bravo: ~/github/Scratch_Files/cs141/ass2[01;32mdavid11n@ltsp-amd64-bravo[00m:[01;34m~/github/Scratch_Files/cs141/ass2[00m$ ./a.out 1 1 0 5 0
+
+Populate Array with unique random integers between 0 and 5...
+DisplayArray2D
+   1
+FindLargest: 1
+FindColSum of col 0: 1
+Sort2DArray followed by DisplayArray2D:
+   1
+CopyArray2D from A to B, then Display B:
+   1
+CopyArray2DSpiral from A to B, then Display B:
+   1
+]0;david11n@ltsp-amd64-bravo: ~/github/Scratch_Files/cs141/ass2[01;32mdavid11n@ltsp-amd64-bravo[00m:[01;34m~/github/Scratch_Files/cs141/ass2[00m$ ./a,[K.out 3 4 0 20 0[K1
+
+Populate Array with unique random integers between 0 and 20...
+DisplayArray2D
+   2  16  12  19
+   7  13   8  14
+   6   4   3  15
+FindLargest: 19
+FindColSum of col 1: 33
+Sort2DArray followed by DisplayArray2D:
+   2   3   4   6
+   7   8  12  13
+  14  15  16  19
+CopyArray2D from A to B, then Display B:
+   2   3   4   6
+   7   8  12  13
+  14  15  16  19
+CopyArray2DSpiral from A to B, then Display B:
+   2   3   4   6
+  15  16  19   7
+  14  13  12   8
+]0;david11n@ltsp-amd64-bravo: ~/github/Scratch_Files/cs141/ass2[01;32mdavid11n@ltsp-amd64-bravo[00m:[01;34m~/github/Scratch_Files/cs141/ass2[00m$ ./a.out 9 9 0 100 1 [A[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[K
+[K[A[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C0 [A
+
+Populate Array with unique random integers between 0 and 100...
+DisplayArray2D
+   3  57   4  19  40  72  86  68  35
+  97  30  64  47  20  99   9  67  52
+  58  25  91  21  84   2  53  39  65
+  10  32  45  96  55  59  14  41  38
+  51  15   8  92 100  98  62  49  34
+  56  44  31  90  16  23  75  17  76
+   0  63  18  12  81  43  74  13  50
+  54   1  26  93  80  85  60   5  48
+  11  95  37  82   7  22  69  33  42
+FindLargest: 100
+FindColSum of col 0: 340
+Sort2DArray followed by DisplayArray2D:
+   0   1   2   3   4   5   7   8   9
+  10  11  12  13  14  15  16  17  18
+  19  20  21  22  23  25  26  30  31
+  32  33  34  35  37  38  39  40  41
+  42  43  44  45  47  48  49  50  51
+  52  53  54  55  56  57  58  59  60
+  62  63  64  65  67  68  69  72  74
+  75  76  80  81  82  84  85  86  90
+  91  92  93  95  96  97  98  99 100
+CopyArray2D from A to B, then Display B:
+   0   1   2   3   4   5   7   8   9
+  10  11  12  13  14  15  16  17  18
+  19  20  21  22  23  25  26  30  31
+  32  33  34  35  37  38  39  40  41
+  42  43  44  45  47  48  49  50  51
+  52  53  54  55  56  57  58  59  60
+  62  63  64  65  67  68  69  72  74
+  75  76  80  81  82  84  85  86  90
+  91  92  93  95  96  97  98  99 100
+CopyArray2DSpiral from A to B, then Display B:
+   0   1   2   3   4   5   7   8   9
+  37  38  39  40  41  42  43  44  10
+  35  63  64  65  67  68  69  45  11
+  34  62  90  91  92  93  72  47  12
+  33  60  86  99 100  95  74  48  13
+  32  59  85  98  97  96  75  49  14
+  31  58  84  82  81  80  76  50  15
+  30  57  56  55  54  53  52  51  16
+  26  25  23  22  21  20  19  18  17
+]0;david11n@ltsp-amd64-bravo: ~/github/Scratch_Files/cs141/ass2[01;32mdavid11n@ltsp-amd64-bravo[00m:[01;34m~/github/Scratch_Files/cs141/ass2[00m$ ./a.out 10 5 200 60 0 2
+
+Populate Array with unique random integers between 200 and 600...
+DisplayArray2D
+ 430 517 368 514 236
+ 360 596 206 520 335
+ 465 534 556 427 376
+ 220 245 515 560 338
+ 445 389 578 521 273
+ 452 530 448 334 433
+ 364 576 346 473 414
+ 480 328 550 417 261
+ 243 510 270 289 497
+ 230 500 475 288 584
+FindLargest: 596
+FindColSum of col 2: 4312
+Sort2DArray followed by DisplayArray2D:
+ 206 220 230 236 243
+ 245 261 270 273 288
+ 289 328 334 335 338
+ 346 360 364 368 376
+ 389 414 417 427 430
+ 433 445 448 452 465
+ 473 475 480 497 500
+ 510 514 515 517 520
+ 521 530 534 550 556
+ 560 576 578 584 596
+CopyArray2D from A to B, then Display B:
+ 206 220 230 236 243
+ 245 261 270 273 288
+ 289 328 334 335 338
+ 346 360 364 368 376
+ 389 414 417 427 430
+ 433 445 448 452 465
+ 473 475 480 497 500
+ 510 514 515 517 520
+ 521 530 534 550 556
+ 560 576 578 584 596
+CopyArray2DSpiral from A to B, then Display B:
+ 206 220 230 236 243
+ 433 445 448 452 245
+ 430 550 556 465 261
+ 427 534 560 473 270
+ 417 530 576 475 273
+ 414 521 578 480 288
+ 389 520 584 497 289
+ 376 517 596 500 328
+ 368 515 514 510 334
+ 364 360 346 338 335
+]0;david11n@ltsp-amd64-bravo: ~/github/Scratch_Files/cs141/ass2[01;32mdavid11n@ltsp-amd64-bravo[00m:[01;34m~/github/Scratch_Files/cs141/ass2[00m$ ./a.otu [K[K[Kut 20 20 0 401 0
+usage: assign2 rowsize, colsize, random min, random max, column to sum
+]0;david11n@ltsp-amd64-bravo: ~/github/Scratch_Files/cs141/ass2[01;32mdavid11n@ltsp-amd64-bravo[00m:[01;34m~/github/Scratch_Files/cs141/ass2[00m$ ./a.out 20 20 0 40100[K[A[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[K
+[K[A[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C1  0
+
+Populate Array with unique random integers between 0 and 401...
+DisplayArray2D
+ 392  60  62 401 104  94 314 190  54 208 281 275 331 155   0 120 325 117  85 204
+ 367 128 182  87 320 129 379 366 162 319 377 225  79 181 269 374 389 148 197 318
+ 152 352 273 226  34 308 380 351 254 131  71 172 211  48  86 373  61 196 235  90
+  64  14 359  36   1  56 233 134 185  29 360 219 337 288 119 321 140 250 312  59
+ 391 399 383 307   8 127  99 191 177  55 112   9 324 271  93 107 277 186 289 396
+  28 194 398 290 387 287 242 246 332 345  52 386 229 188 313 283 370 232 245 267
+ 189  98 384 388 224  44  18 326 363 260 249 110 205 311 274 102  11 375  77 400
+ 390 206 180 167 122  22 272  58 210 282 293  66 187 259 266 203  17 265 192 223
+  43   4  16  27  96 368  76  84 358 146 207 171  12 394 243 261  72  32  65  26
+  69 153  46 200 305 295 276 376 393 350 141 263   6 241  21 303  41 372  35  73
+ 327 147 179 165 217 329 257   7 118 218 309  25 161 268 144  89 183  20 237 239
+ 292 220 215 156 258 137  75 361 154 214 348 279 116 285 138 304 264  39 176  91
+  82 278 159 343 365 124 347 202 212 340 270  24 364 253 222  92 160 322 346 106
+ 150 121  31 291  97 163 238 323 151 157 228 294 306  45 195  57 227 143 126 149
+ 256 382 247 174 164 251 339 355 101  95 248  70 328 158 130 369 300 299 170 371
+ 349 385  67 193 213 231 198 316   3  80 284  10 240  42 135 123 139 114 252 201
+  49 244  19 100 333  68  33  88  47 395 378 338 221 234   2  83 145 115  37 297
+  53 255 230 108 336  81 169 132 310 173 113 209  63 317 344 133  40  38 342 136
+  50 330  74 296 334 315 109 298 381 111   5 199  13 168  78 286 335 125  15 356
+ 341 302 175 262 397 166  23 216  51 354 142  30 236 184 178 362 105 103 353 301
+FindLargest: 401
+FindColSum of col 0: 4034
+Sort2DArray followed by DisplayArray2D:
+   0   1   2   3   4   5   6   7   8   9  10  11  12  13  14  15  16  17  18  19
+  20  21  22  23  24  25  26  27  28  29  30  31  32  33  34  35  36  37  38  39
+  40  41  42  43  44  45  46  47  48  49  50  51  52  53  54  55  56  57  58  59
+  60  61  62  63  64  65  66  67  68  69  70  71  72  73  74  75  76  77  78  79
+  80  81  82  83  84  85  86  87  88  89  90  91  92  93  94  95  96  97  98  99
+ 100 101 102 103 104 105 106 107 108 109 110 111 112 113 114 115 116 117 118 119
+ 120 121 122 123 124 125 126 127 128 129 130 131 132 133 134 135 136 137 138 139
+ 140 141 142 143 144 145 146 147 148 149 150 151 152 153 154 155 156 157 158 159
+ 160 161 162 163 164 165 166 167 168 169 170 171 172 173 174 175 176 177 178 179
+ 180 181 182 183 184 185 186 187 188 189 190 191 192 193 194 195 196 197 198 199
+ 200 201 202 203 204 205 206 207 208 209 210 211 212 213 214 215 216 217 218 219
+ 220 221 222 223 224 225 226 227 228 229 230 231 232 233 234 235 236 237 238 239
+ 240 241 242 243 244 245 246 247 248 249 250 251 252 253 254 255 256 257 258 259
+ 260 261 262 263 264 265 266 267 268 269 270 271 272 273 274 275 276 277 278 279
+ 281 282 283 284 285 286 287 288 289 290 291 292 293 294 295 296 297 298 299 300
+ 301 302 303 304 305 306 307 308 309 310 311 312 313 314 315 316 317 318 319 320
+ 321 322 323 324 325 326 327 328 329 330 331 332 333 334 335 336 337 338 339 340
+ 341 342 343 344 345 346 347 348 349 350 351 352 353 354 355 356 358 359 360 361
+ 362 363 364 365 366 367 368 369 370 371 372 373 374 375 376 377 378 379 380 381
+ 382 383 384 385 386 387 388 389 390 391 392 393 394 395 396 397 398 399 400 401
+CopyArray2D from A to B, then Display B:
+   0   1   2   3   4   5   6   7   8   9  10  11  12  13  14  15  16  17  18  19
+  20  21  22  23  24  25  26  27  28  29  30  31  32  33  34  35  36  37  38  39
+  40  41  42  43  44  45  46  47  48  49  50  51  52  53  54  55  56  57  58  59
+  60  61  62  63  64  65  66  67  68  69  70  71  72  73  74  75  76  77  78  79
+  80  81  82  83  84  85  86  87  88  89  90  91  92  93  94  95  96  97  98  99
+ 100 101 102 103 104 105 106 107 108 109 110 111 112 113 114 115 116 117 118 119
+ 120 121 122 123 124 125 126 127 128 129 130 131 132 133 134 135 136 137 138 139
+ 140 141 142 143 144 145 146 147 148 149 150 151 152 153 154 155 156 157 158 159
+ 160 161 162 163 164 165 166 167 168 169 170 171 172 173 174 175 176 177 178 179
+ 180 181 182 183 184 185 186 187 188 189 190 191 192 193 194 195 196 197 198 199
+ 200 201 202 203 204 205 206 207 208 209 210 211 212 213 214 215 216 217 218 219
+ 220 221 222 223 224 225 226 227 228 229 230 231 232 233 234 235 236 237 238 239
+ 240 241 242 243 244 245 246 247 248 249 250 251 252 253 254 255 256 257 258 259
+ 260 261 262 263 264 265 266 267 268 269 270 271 272 273 274 275 276 277 278 279
+ 281 282 283 284 285 286 287 288 289 290 291 292 293 294 295 296 297 298 299 300
+ 301 302 303 304 305 306 307 308 309 310 311 312 313 314 315 316 317 318 319 320
+ 321 322 323 324 325 326 327 328 329 330 331 332 333 334 335 336 337 338 339 340
+ 341 342 343 344 345 346 347 348 349 350 351 352 353 354 355 356 358 359 360 361
+ 362 363 364 365 366 367 368 369 370 371 372 373 374 375 376 377 378 379 380 381
+ 382 383 384 385 386 387 388 389 390 391 392 393 394 395 396 397 398 399 400 401
+CopyArray2DSpiral from A to B, then Display B:
+   0   1   2   3   4   5   6   7   8   9  10  11  12  13  14  15  16  17  18  19
+  75  76  77  78  79  80  81  82  83  84  85  86  87  88  89  90  91  92  93  20
+  74 143 144 145 146 147 148 149 150 151 152 153 154 155 156 157 158 159  94  21
+  73 142 203 204 205 206 207 208 209 210 211 212 213 214 215 216 217 160  95  22
+  72 141 202 255 256 257 258 259 260 261 262 263 264 265 266 267 218 161  96  23
+  71 140 201 254 300 301 302 303 304 305 306 307 308 309 310 268 219 162  97  24
+  70 139 200 253 299 336 337 338 339 340 341 342 343 344 311 269 220 163  98  25
+  69 138 199 252 298 335 365 366 367 368 369 370 371 345 312 270 221 164  99  26
+  68 137 198 251 297 334 364 385 386 387 388 389 372 346 313 271 222 165 100  27
+  67 136 197 250 296 333 363 384 397 398 399 390 373 347 314 272 223 166 101  28
+  66 135 196 249 295 332 362 383 396 401 400 391 374 348 315 273 224 167 102  29
+  65 134 195 248 294 331 361 382 395 394 393 392 375 349 316 274 225 168 103  30
+  64 133 194 247 293 330 360 381 380 379 378 377 376 350 317 275 226 169 104  31
+  63 132 193 246 292 329 359 358 356 355 354 353 352 351 318 276 227 170 105  32
+  62 131 192 245 291 328 327 326 325 324 323 322 321 320 319 277 228 171 106  33
+  61 130 191 244 290 289 288 287 286 285 284 283 282 281 279 278 229 172 107  34
+  60 129 190 243 242 241 240 239 238 237 236 235 234 233 232 231 230 173 108  35
+  59 128 189 188 187 186 185 184 183 182 181 180 179 178 177 176 175 174 109  36
+  58 127 126 125 124 123 122 121 120 119 118 117 116 115 114 113 112 111 110  37
+  57  56  55  54  53  52  51  50  49  48  47  46  45  44  43  42  41  40  39  38
+]0;david11n@ltsp-amd64-bravo: ~/github/Scratch_Files/cs141/ass2[01;32mdavid11n@ltsp-amd64-bravo[00m:[01;34m~/github/Scratch_Files/cs141/ass2[00m$ exit
+exit
+
+Script done on Wed 28 Feb 2018 12:20:12 PM EST

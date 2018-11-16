@@ -1,0 +1,385 @@
+Script started on Sun Jul 15 17:28:28 2018
+[?1034hbash-3.2$ cat lab8.c
+/*
+ Name:		lab8.c
+ Purpose:	Lab 8
+            CS254
+ Author:  	Ben Davidson
+            104924033
+ Date:    	0709-2018 15:15
+*/
+
+#include <stdio.h>
+#include <math.h>
+#include <time.h>
+#include <string.h>
+#include "../sharedFunctions.h"
+
+#define LOWER  -50
+#define UPPER   50
+#define DEBUG   0
+
+/** Prototypes **/
+void RandomAccArray(int a[], int arraySize, int min, int max);
+void binarySearch(int b[], int low, int high, int searchNum);
+int QuickSort(int a[], int p, int q);
+int Partition(int L[], int p, int q);
+
+int main (int argc, char * argv[])
+{
+    if (argv[1] == NULL) 
+    {
+        printf("usage: lab8 size_of_array\nSpecify the size of the array as a command line argument.\n");
+        return 0;
+    }
+
+    /** Setup the header and the random array **/
+    header("Lab 8", "July 9, 2018");
+    char * finish;
+    int arraySize = strtol(argv[1], &finish, 10);
+    int ra[arraySize];
+    RandomAccArray(ra, arraySize, LOWER, UPPER); 
+    QuickSort(ra, 0, arraySize-1);
+    // int ra[9] = {-5, -4, 0, 3, 5, 6, 7, 8, 10};
+    printf("A[]: ");
+    printArray(ra, arraySize);
+
+    printf("\nBinary Search\n");
+
+    // build the b array
+    int b[arraySize];
+    for (int j = 0 ; j < arraySize ; j++)
+    {
+        b[j] = ra[j] - j;
+    }
+    printf("B[]: ");
+    printArray(b, arraySize);
+
+    binarySearch(b, 0, arraySize, 0);
+
+    return 0;
+}
+
+void RandomAccArray(int a[], int arraySize, int min, int max)
+{
+    int previous = 0;
+    time_t t;
+    srand(time(&t));
+
+    for (int i = 0 ; i < arraySize ; i++)
+    {
+        a[i] = rand() % abs(min - max) + min;
+        previous = a[i];
+    }
+}
+
+
+void binarySearch(int b[], int low, int high, int searchNum)
+{
+    int midpoint = floor( (low + high) / 2);
+    // printf("l: %d[%d] h: %d[%d] mp: %d [%d]\n", b[low], low, b[high-1], high, b[midpoint], midpoint);
+    int i;
+
+    // base case
+    if (b[midpoint] == searchNum)  // || b[low] == searchNum || b[high] == searchNum)
+    {
+        printf("FOUND A MATCH!\n");
+        return;
+    }
+    else if (high - low == 0)
+    {
+        printf("nope\n");
+        return;
+    }
+
+    // recursive case 
+    if ( b[midpoint] > searchNum)
+    {
+        return binarySearch(b, low, midpoint, searchNum);
+    }
+    else if (b[midpoint] < searchNum)
+    {
+        return binarySearch(b, midpoint+1, high, searchNum);
+    }
+
+
+}
+
+int QuickSort(int L[], int p, int q)
+{
+    int r;
+    if (p < q)                  // if p and q haven't crossed each other or met
+    {
+        r = Partition(L, p, q);
+        QuickSort(L, p, r);     // left half of partition
+        // printf("TEST\n");    
+        QuickSort(L, r+1, q);   // right half of partition
+    }
+
+    return 0;
+}
+
+int Partition(int L[], int p, int q)
+{
+    int a = L[p];      // the initial pivot
+    int *rp;
+    int *lp;
+    lp = &L[p-1];       // lp to the beginning;
+    rp = &L[q+1];       // rp to the end;
+    // int counter = 0;
+    if (DEBUG) printf("pivot: %d\n", a);
+         
+    while (lp < rp) 
+    {
+        do                  // move rp to the left until rp <= a
+        {
+            rp--;
+        } while (*rp > a);
+
+        do                  // move lp ro the right until lp >= a
+        {
+            lp++;
+        } while (*lp < a);
+
+        if (lp < rp) swap(lp, rp);
+        // if (DEBUG) printf("partition count: %d new array: \n", counter++);
+        if (DEBUG) printArray(L, q+1);
+    } 
+
+    /** Converts the rp to an index value to pass back to the QuickSort function **/
+    int setIndex =  rp - &L[0];                        // rp - the address of the 0 index of the array
+    if (DEBUG) printArray(L, setIndex+1);
+    if (DEBUG) printf("NEW rp is: %d\n\n", setIndex);
+
+    return setIndex;
+}
+bash-3.2$ cc lab8.c
+bash-3.2$ ./a.out 30
+
+Lab 8: 60-254: Data Structures and Algorithms
+Ben Davidson #104924033
+July 9, 2018
+
+A[]:   -46  -43  -41  -31  -30  -27  -27  -26  -22  -21  -20  -19  -15   -2   -1    8   12   13   14   15   16   21   21   30   33   34   37   39   39   43
+
+Binary Search
+B[]:   -46  -44  -43  -34  -34  -32  -33  -33  -30  -30  -30  -30  -27  -15  -15   -7   -4   -4   -4   -4   -4    0   -1    7    9    9   11   12   11   14
+FOUND A MATCH!
+bash-3.2$ ./a.out 30
+
+Lab 8: 60-254: Data Structures and Algorithms
+Ben Davidson #104924033
+July 9, 2018
+
+A[]:   -46  -45  -44  -40  -34  -34  -32  -31  -29  -22  -21  -19  -18  -12   -4   -3    0    5    8   17   19   26   27   34   34   38   39   48   48   49
+
+Binary Search
+B[]:   -46  -46  -46  -43  -38  -39  -38  -38  -37  -31  -31  -30  -30  -25  -18  -18  -16  -12  -10   -2   -1    5    5   11   10   13   13   21   20   20
+nope
+bash-3.2$ cat lab8_tree.c
+/*
+ Name:		lab8_tree.c
+ Purpose:	Lab 8
+            CS254
+ Author:  	Ben Davidson
+            104924033
+ Date:    	0713-2018 2:25
+*/
+
+#include <stdio.h>
+#include <math.h>
+#include <time.h>
+#include <string.h>
+#include "../sharedFunctions.h"
+
+#define LOWER   -100
+#define UPPER   100
+#define SIZE    10
+#define DEBUG   0
+
+typedef struct node Node ;
+
+struct node {
+    int key;
+    Node *left;
+    Node *right;
+
+};
+
+/** Global **/
+int numberOfFullNodes       = 0;
+int numberOfLeaves          = 0;
+int numberOfOneChildNodes   = 0;
+int counter = 0;
+// other global counters
+
+/** Prototypes **/
+Node *CreateNode(void);
+Node *InputNode(Node *ptrNew, int);
+Node *addTree(Node *ptrNew, int);
+void postOrderCount(Node *);
+void preOrderCount(Node *);
+void destroyTree(Node *);
+void print_inOrder(Node *);
+
+int main (int argc, char * argv[])
+{
+    if (argv[1] == NULL) 
+    {
+        printf("usage: lab8 size_of_array\nSpecify the size of the array as a command line argument.\n");
+        return 0;
+    }
+
+    /** Setup the header and the random array **/
+    header("Lab 8 Question 2", "July 9, 2018");
+    char * finish;
+    int arraySize = strtol(argv[1], &finish, 10);
+    int ra[arraySize];
+    RandomArray(ra, arraySize, LOWER, UPPER); 
+    
+    // test arrays
+    // int ra[10] = {21, 20, 53, 61, 38, 16, 18, 72, 3, 65};
+    // int ra[10] = {5, 5, 5, 5, 5, 5, 5, 5, 5, 5};
+    // int ra[10] = {0,   14,   77,   45,   89,   84,   96,   39,   82,   85};
+    // int ra[10] = {99, 20, 53, 61, 38, 16, 18, 72, 3, 65};
+    
+    /* Print the values to be added to the tree */
+    printf("A[]: ");
+    printArray(ra, arraySize);
+
+    /* Create the binary tree */
+    Node *binaryTree;
+    binaryTree = NULL;
+    
+
+    /* Build the binary tree */
+    for (int i = 0 ; i < arraySize ; i++)
+    {
+        binaryTree = addTree(binaryTree, ra[i] );
+    }
+
+    /* Output the inorder arrray and node data */
+    printf(" io: ");
+    print_inOrder(binaryTree);
+    printf("\n\nLeaves:       %d\n", numberOfLeaves);
+    printf("One Child:    %d\n", numberOfOneChildNodes);
+    printf("Two children: %d\n", numberOfFullNodes);
+
+    /* Cleanup the mess */
+    destroyTree(binaryTree);
+
+    return 0;
+}
+
+/* CreateNode: Creates a struct Node
+ * INPUT:
+ * OUTPUT: a Node
+ */
+Node *CreateNode(void)
+{
+    /* Cast to stuct Node, allocate memory of size Node */
+    return (Node *) malloc(sizeof(Node));
+}
+/* addTree: adds a node to a binary tree
+ * INPUT:   a pointer to the binary tree and a key to be added
+ * OUPTUT:  returns a the binary tree
+ */
+Node *addTree(Node *ptrNew, int newKey)
+{
+    Node *temp = NULL;           // a temp struct * node to work with 
+
+    if (ptrNew == NULL)         // if node being examined is NULL create a new node 
+    {
+        temp = CreateNode();    // allocate memory to the temp node 
+        temp->key = newKey;     // set the key
+        temp->left = NULL;      // set the left pointer to NULL
+        temp->right = NULL;     // set the right pointer to NULL
+        ptrNew = temp;
+        
+    }
+    else if (ptrNew->key > newKey)                      // the key is smaller, move down the left side
+    {
+        ptrNew->left = addTree(ptrNew->left, newKey);
+    }
+    else if (ptrNew->key < newKey)                      // the key is larger, move down teh right side
+    {
+        ptrNew->right = addTree(ptrNew->right, newKey);
+    }
+    else return ptrNew;                                 // the key is a duplicate, skip it
+
+    return ptrNew;
+}
+
+
+/* destroyTree: recusively destroy a binary tree
+ *       INPUT: the tree to be destroyed
+ *       OUPUT: 
+ */
+void destroyTree(Node * delNode)
+{
+    if (delNode)                     // if there is a node
+    {
+        destroyTree(delNode->left); // work down to the left
+        destroyTree(delNode->right);// work to the right    
+        free(delNode);              // free the node and the bottom
+    }
+}
+
+/* inOrder: traverse the tree in order
+ *   INPUT: a tree
+ *  OUTPUT: increments counter date for nodes and outputs the nodes in orders
+ */
+void print_inOrder(Node * tree)
+{
+    /* This will recursively work all the way to the smallest value and build up incrementally by key */
+    if (tree)
+    {
+        print_inOrder(tree->left); // work down the left side
+
+        if  (tree->left == NULL && tree->right == NULL) numberOfLeaves++; // if no children
+        if ((tree->left == NULL && tree->right != NULL) ||                  
+            (tree->left != NULL && tree->right == NULL) ) numberOfOneChildNodes++; // if one child
+        if  (tree->left != NULL && tree->right != NULL) numberOfFullNodes++; // if if two children
+        printf("%5d", tree->key); // print the key
+        
+        print_inOrder(tree->right); // work down the right side
+    }
+}bash-3.2$ cc lab8_tree.c
+bash-3.2$ .a.out 30[1@/
+
+Lab 8 Question 2: 60-254: Data Structures and Algorithms
+Ben Davidson #104924033
+July 9, 2018
+
+A[]:   -15  -68   95  -32   98  -41   36  -91   41  -19  -22  -49  -70  -70   67  -49   80   86   -9  -22  -50  -82  -89   53   74   61   78  -42  -98   67
+ io:   -98  -91  -89  -82  -70  -68  -50  -49  -42  -41  -32  -22  -19  -15   -9   36   41   53   61   67   74   78   80   86   95   98
+
+Leaves:       10
+One Child:    7
+Two children: 9
+bash-3.2$ ./a.out 10
+
+Lab 8 Question 2: 60-254: Data Structures and Algorithms
+Ben Davidson #104924033
+July 9, 2018
+
+A[]:    34   28  -29   33   20  -31   -3   20   67   15
+ io:   -31  -29   -3   15   20   28   33   34   67
+
+Leaves:       4
+One Child:    2
+Two children: 3
+bash-3.2$ ls -l
+total 128
+-rwxr-xr-x  1 benjamin  staff  9404 Jul 15 17:29 [1m[31ma.out[39;49m[0m
+drwxr-xr-x@ 3 benjamin  staff   102 Jul 13 17:21 [1m[36ma.out.dSYM[39;49m[0m
+-rwxr-xr-x  1 benjamin  staff  9140 Jul 15 17:24 [1m[31mlab8[39;49m[0m
+-rw-r--r--  1 benjamin  staff  1387 Jul 10 13:41 lab8-heap.c
+-rw-r--r--  1 benjamin  staff  3677 Jul 13 14:37 lab8.c
+-rw-r--r--  1 benjamin  staff  9782 Jul 15 17:29 lab8.txt
+-rwxr-xr-x  1 benjamin  staff  9404 Jul 15 17:27 [1m[31mlab8_tree[39;49m[0m
+-rw-r--r--  1 benjamin  staff  4736 Jul 15 17:27 lab8_tree.c
+bash-3.2$ exit
+exit
+
+Script done on Sun Jul 15 17:30:00 2018

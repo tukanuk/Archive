@@ -1,0 +1,273 @@
+/* Name:    lab7.c
+   Purpose: Lab 7
+   Author:  Ben Davidson
+            104924033
+   CS254 Lab Section
+   Date:    0703-2018 10:00
+*/
+
+// rahma11u@uwindsor.ca
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <time.h>
+#include <string.h>
+#include "../sharedFunctions.h" // small library of personal shared functions
+
+#define maxN  100
+#define DEBUG 0
+#define LOWER 0
+#define UPPER 1000000
+
+/** Prototypes **/
+
+int InsertionSort(long int a[], long int arraySize);
+int QuickSort(long int a[], long p, long q);
+long Partition(long int L[], long p, long q);
+long Partition2(long int L[], long p, long q);
+int RandomArray(long int a[], long int arraySize);
+int printArray(long int a[], long int arraySize);
+void swap2 (long int L[], long p, long q);
+void swap (long *a, long *b);
+long Partition3 (long L[], long p, long q);
+
+/** Global **/
+// long *lp;
+// long *rp;
+
+int main (int argc, char *argv[])
+{
+    if (argv[1] == NULL) 
+    {
+        printf("Specify the size of the array as a command line argument.\n");
+        return 0;
+    }
+    header("Lab 7", "July 3, 2018");
+    char * end;
+    long int arraySize = strtol(argv[1], &end, 10);
+    long int ra[arraySize];
+    RandomArray(ra, arraySize);
+    // long int ra[8] = {5, 3, 2, 6, 4, 1, 3, 7};
+    printArray(ra, arraySize);
+
+    
+    // lp = &ra[0];
+    // rp = &ra[arraySize-1];
+
+    // printf("lp: %ld\trp: %ld\tsize: %ld\n", *lp, *rp, arraySize);
+    printf("size: %ld\n", arraySize);
+
+    // InsertionSort(ra, arraySize);
+
+    QuickSort(ra, 0, arraySize-1);
+    printArray(ra, arraySize);
+    // printArray(ra, arraySize);
+    
+    return 0;
+}
+
+int QuickSort(long int L[], long p, long q)
+{
+    long r;
+    if (p < q)
+    {
+        r = Partition(L, p, q);
+        QuickSort(L, p, r);
+        // printf("TEST\n");
+        QuickSort(L, r+1, q);
+    }
+
+    return 0;
+}
+
+long Partition3 (long L[], long p, long q)
+{
+    long a = L[q]; //last element as pivot
+    long lp = p - 1;
+ 
+    for (long rp = p; rp <= q - 1; rp++)
+    {
+        if (L[rp] <= a)
+        {
+            lp = lp + 1;
+            swap(&L[lp], &L[rp]);
+        }
+    }
+    swap(&L[lp + 1], &L[q]);
+    return lp + 1;
+}
+
+long Partition(long int L[], long p, long q)
+{
+    long a = L[p];      // the initial pivot
+    long *rp;
+    long *lp;
+    lp = &L[p-1];       // lp to the beginning;
+    rp = &L[q+1];       // rp to the end;
+    int counter = 0;
+    if (DEBUG) printf("pivot: %ld\n", a);
+         
+    while (lp < rp) 
+    {
+        do                  // move rp to the left until rp <= a
+        {
+            rp--;
+        } while (*rp > a);
+
+        do                  // move lp ro the right until lp >= a
+        {
+            lp++;
+        } while (*lp < a);
+
+        if (lp < rp) swap(lp, rp);
+        if (DEBUG) printf("partition count: %d new array: \n", counter++);
+        if (DEBUG) printArray(L, q+1);
+    } 
+
+    long setIndex =  rp - &L[0];
+    if (DEBUG) printArray(L, setIndex+1);
+    if (DEBUG) printf("NEW rp is: %ld\n\n", setIndex);
+
+    return setIndex;
+
+    
+}
+// long Partition(long int L[], long p, long q)
+// {
+//     long * rp;
+//     long * lp;
+//     int counter = 0;
+//         long a = L[p];      // the initial pivot
+//         if (DEBUG) printf("pivot: %ld\n", a);
+//         lp = &L[p-1];       // lp to the beginning
+//         rp = &L[q+1];       // rp to the end
+//     while (lp < rp) 
+//     {
+//         do                  // move rp to the left until rp <= a
+//         {
+//             rp--;
+//         } while (*rp > a);
+
+//         do                  // move lp ro the right until lp >= a
+//         {
+//             lp++;
+//         } while (*lp < a);
+
+//         swap(lp, rp);
+//         if (DEBUG) printf("partition count: %d new array: \n", counter++);
+//         printArray(L, q+1);
+
+//     } 
+
+//     long setIndex =  rp - &L[p];
+//     if (DEBUG) printf("NEW PIVOT is: %ld\n\n", setIndex);
+
+//     return setIndex;
+
+    
+// }
+
+long Partition2(long int L[], long p, long q)
+{
+    long low;
+    long high;
+    int counter = 0;
+    long a = L[p];      // the initial pivot
+
+    do
+    {
+        if (DEBUG) printf("pivot: %ld\n", a);
+        low = p-1;
+        high = q+1;
+        if (DEBUG) printf("low: %ld high: %ld\n", low, high);
+
+        do                  // move rp to the left until rp <= a
+        {
+            --high;
+        } while (L[high] > a);
+
+        do                  // move lp ro the right until lp >= a
+        {
+            ++low;
+        } while (L[low] < a);
+
+        swap2(L, low, high);
+        printf("partition count: %d new array: \n", counter++);
+        printArray(L, 8);
+
+    } while (low < high);
+
+    // printf("NEW PIVOT is: %ld\n\n", setIndex);
+
+    return high;
+
+    
+}
+
+void swap2 (long int L[], long p, long q)
+{
+    printf("swaping %ld and %ld... ", L[p], L[q]);
+    int temp = L[p];
+    L[p] = L[q];
+    L[q] = temp;
+    printf("now %ld and %ld!\n", L[p], L[q]);
+}
+
+void swap (long *a, long *b)
+{
+    if (DEBUG) printf("swaping %ld and %ld... ", *a, *b);
+    int temp = *a;
+    *a = *b;
+    *b = temp;
+    if (DEBUG) printf("now %ld and %ld!\n", *a, *b);
+}
+
+
+
+int RandomArray(long int a[], long int arraySize)
+{
+    time_t t;
+    srand(time(&t));
+
+    for (long int i = 0 ; i < arraySize ; i++)
+    {
+        a[i] = rand() % (UPPER - LOWER) + LOWER;
+        if (DEBUG) printf("%ld ", a[i]);
+    }
+
+    if (DEBUG) printf("\n"); for (int i = 0 ; i < 80 ; i++) {printf("*");} printf("\n\n");
+
+    return 0;
+}
+
+int InsertionSort(long int a[], long int arraySize)
+{
+    int i = 0;
+    
+    while (i <= arraySize)
+    {
+        int temp = a[i];
+        int j = i;
+        while (j > 0 && a[j-1] > temp)
+        {
+            a[j] = a[j-1];
+            j--;
+        }
+
+        a[j] = temp;
+        i++;
+    }
+    return 0;
+}
+
+int printArray(long int a[], long int arraySize)
+{
+    for (int i = 0 ; i < arraySize ; i++)
+    {
+        printf("%9ld", a[i]);
+    }
+
+    printf("\n");
+
+    return 0;
+}

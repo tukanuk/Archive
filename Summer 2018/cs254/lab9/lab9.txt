@@ -1,0 +1,159 @@
+Script started on Wed Jul 18 14:45:11 2018
+[?1034hbash-3.2$ cat lab9.c
+/*
+ Name:		lab9.c
+ Purpose:	Lab 9
+            CS254
+ Author:  	Ben Davidson
+            104924033
+ Date:    	0718-2018 11:35
+*/
+
+#include <stdio.h>
+#include <math.h>
+#include <time.h>
+#include <string.h>
+#include "../sharedFunctions.h"
+
+#define LOWER -1000
+#define UPPER  1000
+#define DEBUG  0
+
+#define TIME(n) time_t start = clock(); \
+                (n); \
+                time_t end = clock(); \
+                double runTime = (double)(end - start)/CLOCKS_PER_SEC; \
+                printf("Time to run: %f seconds\n", runTime);
+
+/** Prototypes **/
+void heapify (int a[], int i, int total);
+void buildHeap  (int a[], int n);
+void heapSort (int a[], int n);
+
+/* Global */
+// int total;
+
+int main (int argc, char * argv[])
+{
+    if (argv[1] == NULL) 
+    {
+        printf("usage: lab8 size_of_array\nSpecify the size of the array as a command line argument.\n");
+        return 0;
+    }
+
+    /** Setup the header and the random array **/
+    header("Lab 9", "July 17, 2018");
+    char * finish;
+    int arraySize = strtol(argv[1], &finish, 10);
+    
+    /* Random Array */
+    int ra[arraySize];
+    RandomArray(ra, arraySize, LOWER, UPPER); 
+    
+    /* Test Array */
+    // int ra[7] = {12, 10, 20, 19, 8, 7, 15};
+    
+    /* Print Array */
+    printf("ra[]:   ");
+    if (arraySize <= 1000) printArray(ra, arraySize); // surpress large outputs
+    printf("\n");
+
+    TIME(heapSort(ra, arraySize));
+
+    /* Print the heap sorted array */
+    printf("sorted: ");
+    if (arraySize > 1000) printf("\n");     // surpress large outputs
+    else printArray(ra, arraySize);
+
+    return 0;
+}
+
+void heapSort (int a[], int n)
+{
+    buildHeap (a, n);
+
+    int i = n-1;
+    while (i > 0)
+    {
+        swap(&a[0],&a[i]);
+        --i;
+        heapify(a, 0, i);
+    }
+}
+
+void buildHeap (int a[], int n)
+{
+    int total = n-1;
+
+    // starting with the non-children heapify
+    for (int i = total / 2 ; i >= 0 ; i--)
+    {
+        heapify(a, i, total);
+    }
+}
+
+void heapify (int a[], int i, int total)
+{
+    
+    int root   = i;         // the root node
+    int lChild = i * 2;     // the left child
+    int rChild = i * 2 + 1; // the right child
+
+    if (lChild <= total && a[lChild] > a[root]) // if left is greater than the root
+    {
+        root = lChild;
+    }
+    if (rChild <= total && a[rChild] > a[root]) // if right is greater that the root
+    {
+        root = rChild;
+    }
+
+    if (root != i) // if root has changed value then swap right and larger child
+    {
+        swap(&a[i], &a[root]);
+        heapify(a, root, total);    // if the root changed call heapify again
+    }
+
+
+}bash-3.2$ cc lab9.c
+bash-3.2$ .a[K/a.out 10
+
+Lab 9: 60-254: Data Structures and Algorithms
+Ben Davidson #104924033
+July 17, 2018
+
+ra[]:     634  980 -551 -351 -747  681  835 -447  114 -933
+
+Time to run: 0.000006 seconds
+sorted:  -933 -747 -551 -447 -351  114  634  681  835  980
+bash-3.2$ ./a.out 100
+
+Lab 9: 60-254: Data Structures and Algorithms
+Ben Davidson #104924033
+July 17, 2018
+
+ra[]:    -910 -675  151  325  458 -790 -813  695 -737 -437  395 -684  345 -163  169 -726  387 -354  795  766  -20  107 -931 -115  -12 -229  517 -669 -890  953  252  703 -378  958 -884 -696  389  554  396  681  721 -696 -700  374  360  -11  786 -961  106  534  107  654  380 -910 -170   49  731 -935 -810  181 -969 -816 -673 -936  625  262 -968  -11 -724 -341  857 -856 -290  717  469  212  745  706  -54 -715  694 -559  405 -673 -507 -986  -26 -578  -85 -207  594  269 -444  532 -715 -773  149 -744  363  171
+
+Time to run: 0.000029 seconds
+sorted:  -986 -969 -968 -961 -936 -935 -931 -910 -910 -890 -884 -856 -816 -813 -810 -790 -773 -744 -737 -726 -724 -715 -715 -700 -696 -696 -684 -675 -673 -673 -669 -578 -559 -507 -444 -437 -378 -354 -341 -290 -229 -207 -170 -163 -115  -85  -54  -26  -20  -12  -11  -11   49  106  107  107  149  151  169  171  181  212  252  262  269  325  345  360  363  374  380  387  389  395  396  405  458  469  517  532  534  554  594  625  654  681  694  695  703  706  717  721  731  745  766  786  795  857  953  958
+bash-3.2$ ./a.out 10000
+
+Lab 9: 60-254: Data Structures and Algorithms
+Ben Davidson #104924033
+July 17, 2018
+
+ra[]:   
+Time to run: 0.003693 seconds
+sorted: 
+bash-3.2$ ls -l
+total 80
+-rwxr-xr-x  1 benjamin  staff  9076 18 Jul 14:45 a.out
+drwxr-xr-x@ 3 benjamin  staff    96 17 Jul 12:35 a.out.dSYM
+-rwxr-xr-x  1 benjamin  staff  9076 18 Jul 14:34 lab9
+-rw-r--r--@ 1 benjamin  staff  2080 18 Jul 11:27 lab9.bak
+-rw-r--r--@ 1 benjamin  staff  2586 18 Jul 14:34 lab9.c
+-rw-r--r--  1 benjamin  staff  4243 18 Jul 14:45 lab9.txt
+bash-3.2$ exit
+exit
+
+Script done on Wed Jul 18 14:46:06 2018

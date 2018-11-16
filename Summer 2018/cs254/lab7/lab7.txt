@@ -1,0 +1,250 @@
+Script started on Thu Jul  5 23:32:36 2018
+[?1034hbash-3.2$ cat lab7.c
+/* Name:    lab7.c
+   Purpose: Lab 7
+   Author:  Ben Davidson
+            104924033
+   CS254 Lab Section
+   Date:    0703-2018 10:00
+*/
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <time.h>
+#include <string.h>
+#include "../sharedFunctions.h" // small library of personal shared functions
+
+#define maxN  100
+#define DEBUG 0
+#define LOWER 0
+#define UPPER 10000
+
+/** Prototypes **/
+
+int InsertionSort(long int a[], long int arraySize);
+int QuickSort(long int a[], long p, long q);
+long Partition(long int L[], long p, long q);
+int RandomArray(long int a[], long int arraySize);
+int printArray(long int a[], long int arraySize);
+void swap (long *a, long *b);
+
+int main (int argc, char *argv[])
+{
+    if (argv[1] == NULL) 
+    {
+        printf("usage: lab7 size_of_array\nSpecify the size of the array as a command line argument.\nArray sizes larger than 1000 have output suppressed.\n");
+        return 0;
+    }
+
+    /** Setup the header and the random array **/
+    header("Lab 7", "July 3, 2018");
+    char * finish;
+    long int arraySize = strtol(argv[1], &finish, 10);
+    long int ra[arraySize];
+    RandomArray(ra, arraySize);
+    // long int ra[8] = {5, 3, 2, 6, 4, 1, 3, 7};
+    if (arraySize <=1000) printArray(ra, arraySize);
+    long ia[arraySize];                         // make a copy of the array for the insertion sort
+    memcpy(ia, ra, arraySize*sizeof(long));
+    
+    /** Test the Insertion Sort **/
+    time_t start = clock();                                                                     // record the start time
+    InsertionSort(ia, arraySize);
+    time_t end = clock();                                                                       // record the end time
+    printf("\nInsertion Sort\nTime to run: %f seconds\n\n", (double)(end - start)/CLOCKS_PER_SEC );  // display the time to run in seconds
+    if (arraySize <= 1000) printArray(ia, arraySize);                                           // if array is 1000 or smaller print the output
+
+    start = clock();                                                                            // record the start time
+    QuickSort(ra, 0, arraySize-1);
+    end = clock();                                                                              // record the start time
+    printf("\nQuick Sort\nTime to run: %f seconds\n\n", (double)(end - start)/CLOCKS_PER_SEC );     // display the time to run in seconds
+    if (arraySize <= 1000) printArray(ra, arraySize);
+   
+    return 0;
+}
+
+int QuickSort(long int L[], long p, long q)
+{
+    long r;
+    if (p < q)                  // if p and q haven't crossed each other or met
+    {
+        r = Partition(L, p, q);
+        QuickSort(L, p, r);     // left half of partition
+        // printf("TEST\n");    
+        QuickSort(L, r+1, q);   // right half of partition
+    }
+
+    return 0;
+}
+
+long Partition(long int L[], long p, long q)
+{
+    long a = L[p];      // the initial pivot
+    long *rp;
+    long *lp;
+    lp = &L[p-1];       // lp to the beginning;
+    rp = &L[q+1];       // rp to the end;
+    // int counter = 0;
+    if (DEBUG) printf("pivot: %ld\n", a);
+         
+    while (lp < rp) 
+    {
+        do                  // move rp to the left until rp <= a
+        {
+            rp--;
+        } while (*rp > a);
+
+        do                  // move lp ro the right until lp >= a
+        {
+            lp++;
+        } while (*lp < a);
+
+        if (lp < rp) swap(lp, rp);
+        // if (DEBUG) printf("partition count: %d new array: \n", counter++);
+        if (DEBUG) printArray(L, q+1);
+    } 
+
+    /** Converts the rp to an index value to pass back to the QuickSort function **/
+    long setIndex =  rp - &L[0];                        // rp - the address of the 0 index of the array
+    if (DEBUG) printArray(L, setIndex+1);
+    if (DEBUG) printf("NEW rp is: %ld\n\n", setIndex);
+
+    return setIndex;
+
+    
+}
+
+/* Swap function
+ */
+void swap (long *a, long *b)
+{
+    if (DEBUG) printf("swaping %ld and %ld... ", *a, *b);
+    long temp = *a;
+    *a = *b;
+    *b = temp;
+    if (DEBUG) printf("now %ld and %ld!\n", *a, *b);
+}
+
+
+/* RandomArray - builds a random array of size arraySize
+ */
+int RandomArray(long int a[], long int arraySize)
+{
+    time_t t;
+    srand(time(&t));
+
+    for (long int i = 0 ; i < arraySize ; i++)
+    {
+        a[i] = rand() % (UPPER - LOWER) + LOWER;
+        if (DEBUG) printf("%ld ", a[i]);
+    }
+
+    if (DEBUG) 
+    {
+        printf("\n"); 
+        for (int i = 0 ; i < 80 ; i++)
+        {
+            printf("*");
+        } 
+        printf("\n\n");
+    }
+
+    return 0;
+}
+
+int InsertionSort(long int a[], long int arraySize)
+{
+    int i = 1;
+    
+    while (i <= arraySize - 1)
+    {
+        int temp = a[i];
+        int j = i;
+        while (j > 0 && a[j-1] > temp)
+        {
+            a[j] = a[j-1];
+            j--;
+        }
+
+        a[j] = temp;
+        i++;
+    }
+    return 0;
+}
+
+/* printArray 
+ * output the contents of an array to screen
+ */
+int printArray(long int a[], long int arraySize)
+{
+    for (long i = 0 ; i < arraySize ; i++)
+    {
+        printf("%9ld", a[i]);
+    }
+
+    printf("\n");
+
+    return 0;
+}bash-3.2$ cc lab7.c
+bash-3.2$ ./a.out 10
+
+Lab 7: 60-254: Data Structures and Algorithms
+Ben Davidson #104924033
+July 3, 2018
+
+     7291     1631     5659     8843       58     7286     4260     9071     9806     4316
+
+Insertion Sort
+Time to run: 0.000004 seconds
+
+       58     1631     4260     4316     5659     7286     7291     8843     9071     9806
+
+Quick Sort
+Time to run: 0.000002 seconds
+
+       58     1631     4260     4316     5659     7286     7291     8843     9071     9806
+bash-3.2$ ./a.out 100
+
+Lab 7: 60-254: Data Structures and Algorithms
+Ben Davidson #104924033
+July 3, 2018
+
+     1747     6329      714     3519     6910      168     4612     7860     4955     6812     8404     4607     6706     5080     3848     8649     5603     3185     2786     1277     4160     8618     7457     8501     2436     1278     6056     9486     7215     4642     9616     4611      432     2382     6603     7557     5890     7589     1379     9290     3319     7445     9230     7058     2656     6159      213     1158     4165     7388     1295     2254     6856     2802     6143     2032     7663     8039     3142     5890     3156     2658     6109     1844     3513     7513     8435      718     5699     7205     2913     4348      995     4225     8379     8400     9256     9534     1930     3439     6142     8996     2043     9114     6775      741     8683     8375     1339     6239     1477      309     8975     8295     9990      106     9835     8977     4309     4792
+
+Insertion Sort
+Time to run: 0.000012 seconds
+
+      106      168      213      309      432      714      718      741      995     1158     1277     1278     1295     1339     1379     1477     1747     1844     1930     2032     2043     2254     2382     2436     2656     2658     2786     2802     2913     3142     3156     3185     3319     3439     3513     3519     3848     4160     4165     4225     4309     4348     4607     4611     4612     4642     4792     4955     5080     5603     5699     5890     5890     6056     6109     6142     6143     6159     6239     6329     6603     6706     6775     6812     6856     6910     7058     7205     7215     7388     7445     7457     7513     7557     7589     7663     7860     8039     8295     8375     8379     8400     8404     8435     8501     8618     8649     8683     8975     8977     8996     9114     9230     9256     9290     9486     9534     9616     9835     9990
+
+Quick Sort
+Time to run: 0.000010 seconds
+
+      106      168      213      309      432      714      718      741      995     1158     1277     1278     1295     1339     1379     1477     1747     1844     1930     2032     2043     2254     2382     2436     2656     2658     2786     2802     2913     3142     3156     3185     3319     3439     3513     3519     3848     4160     4165     4225     4309     4348     4607     4611     4612     4642     4792     4955     5080     5603     5699     5890     5890     6056     6109     6142     6143     6159     6239     6329     6603     6706     6775     6812     6856     6910     7058     7205     7215     7388     7445     7457     7513     7557     7589     7663     7860     8039     8295     8375     8379     8400     8404     8435     8501     8618     8649     8683     8975     8977     8996     9114     9230     9256     9290     9486     9534     9616     9835     9990
+bash-3.2$ ./a.out 100000
+
+Lab 7: 60-254: Data Structures and Algorithms
+Ben Davidson #104924033
+July 3, 2018
+
+
+Insertion Sort
+Time to run: 6.928613 seconds
+
+
+Quick Sort
+Time to run: 0.012198 seconds
+
+bash-3.2$ ls 0-[K[K-l
+total 136
+-rwxr-xr-x  1 benjamin  staff  9148  5 Jul 23:32 [1m[31ma.out[39;49m[0m
+drwxr-xr-x@ 3 benjamin  staff   102  3 Jul 15:10 [1m[36ma.out.dSYM[39;49m[0m
+-rwxr-xr-x  1 benjamin  staff  9148  5 Jul 23:31 [1m[31mlab7[39;49m[0m
+-rw-r--r--  1 benjamin  staff  5095  5 Jul 23:31 lab7.c
+-rw-r--r--@ 1 benjamin  staff  5915  5 Jul 22:26 lab7.c.bak
+-rw-r--r--  1 benjamin  staff  8797  5 Jul 23:33 lab7.txt
+-rwxr-xr-x  1 benjamin  staff  8916  5 Jul 16:22 [1m[31mquicksort_demo[39;49m[0m
+-rw-r--r--  1 benjamin  staff  2114  5 Jul 16:22 quicksort_demo.c
+bash-3.2$ exit
+exit
+
+Script done on Thu Jul  5 23:33:59 2018

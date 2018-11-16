@@ -1,0 +1,441 @@
+Script started on Tue 03 Apr 2018 12:27:21 PM EDT
+]0;david11n@ltsp-amd64-alpha: ~/github/Scratch_Files/cs141/ass4[01;32mdavid11n@ltsp-amd64-alpha[00m:[01;34m~/github/Scratch_Files/cs141/ass4[00m$ cat assign4.t[Kc
+/*
+ * Name: twitter2.c
+ * Purpose: Assigment 4: Simple Tweet and Linked Lists
+ * Author: Ben Davidson
+ *         104924033
+ * CS141 
+ * Date: 0402-2018 12:54
+ */
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <time.h>
+
+// Tweet Structure to store the metadata of a tweet
+struct tweet
+{
+    int id;                 // unique id for tweet
+    char created_at[51];    // UTC time and date
+    char text[141];         // the body of the tweet
+    char user[21];          // the user name
+    struct tweet *ptrNext;  // self referential pointer
+};
+
+typedef struct tweet Tweet; // typedef for tweet struct
+
+// global variable definition
+
+Tweet *ptrFirst = NULL;
+Tweet *ptrLast = NULL;
+
+// Protoypes
+
+Tweet* CreateNode (int id, char created_at[51], char user[21], char text[141] );
+Tweet* AddBeginning (Tweet* ptrNew);
+Tweet* AddEnd (Tweet* ptrNew);
+Tweet* PrintListRecursive(Tweet* ptrCurrent);
+int isEmpty();
+int nStrip(char *strStrip);
+Tweet* Insert (Tweet* ptrNew);
+Tweet* ClearListRecursive(Tweet* ptrCurrent);
+int loadTweets(char fileName[100]);
+int saveTweets (char fileName[100], Tweet* ptrCurrent);
+void saveTweetsRec(FILE* fp, Tweet* ptrCurrent);
+
+int main ()
+{
+    // Function tests
+    // Insert(CreateNode(6, "Friday", "Finally friday", "zen"));
+    // Insert(CreateNode(5, "Monday", "A new week", "alan"));
+    // Insert(CreateNode(1, "Tuesday", "Test tweet", "benjamin"));
+    // Insert(CreateNode(2, "Wednesday", "Another Test tweet", "todd"));
+
+    loadTweets("tweets.txt");
+    //PrintListRecursive(ptrFirst);
+    saveTweets("tweets.txt", ptrFirst);
+    
+    ClearListRecursive(ptrFirst);
+
+    return 0;
+}
+
+/*
+ *	loadTweets: On success, loads tweets from a file into a Tweet structure linked list
+ *		 INPUT: the file name to load
+ *		OUTPUT:  0 on sucess, -1 on failure. 
+ */
+int loadTweets(char fileName[100])
+{
+    FILE *fp; // file handle
+    // int i; // index
+    char buff[200]; // buffer to hold each line of file
+
+    fp = fopen(fileName, "r");
+
+    if (fp == NULL)
+    {
+        return -1;
+    }
+
+    // i = 0;
+
+    // temp variables to store tweet data
+    int id = 0;
+    char created_at[51];
+    char text[141];
+    char user[21];
+
+    // goes through file one line at a time
+    while ( fgets(buff, sizeof buff, fp) )
+    {
+        nStrip(buff);                   // removes "\n"
+        id = atoi(buff);                // parses the string, getting an int 
+
+        fgets(buff, sizeof buff, fp);   
+        nStrip(buff);
+        strncpy(created_at, buff, 51);  // copies buff to created_at
+
+        fgets(buff, sizeof buff, fp);
+        nStrip(buff);
+        strncpy(user, buff, 21);        // copies buff to user
+
+        fgets(buff, sizeof buff, fp);
+        nStrip(buff);
+        strncpy(text, buff, 141);       // copies buff to text
+
+         // creates a node using hte data from the file and insert sorts it into the linked list
+        Insert( CreateNode(id, created_at, user, text) );
+    }
+
+    fclose(fp);                         // closes the file
+
+    return 0;
+}
+
+/*
+ *	CreateNode: Creates a single node of a linked list
+ *		 INPUT: the node data. id, created_at, text, user
+ *	 	OUTPUT: a ptr to the new node
+ */
+Tweet* CreateNode (int id, char created_at[51], char user[21], char text[141] )
+{
+    //  New ptr data type Tweet wiht memory allocated to the size of the tweet struct
+    Tweet* ptrNew = (Tweet*) (malloc(sizeof(Tweet /*struct tweet*/)) );   
+    ptrNew->id = id;                        // add id to the node
+    strcpy(ptrNew->created_at, created_at); // add created_at to the node
+    strcpy(ptrNew->text, text);             // add text to the node
+    strcpy(ptrNew->user, user);             // add user to the node
+    ptrNew->ptrNext = NULL;                 // sets ptrNext to NULL
+
+    return ptrNew;                          // returns ptrNew
+}
+
+/*
+ *	isEmpty: to check if the linked list is empty
+ *	  INPUT: none
+ *	 OUTPUT: 1 if empty, 0 if not empty
+*/
+int isEmpty()
+{
+    return (ptrFirst == NULL);
+}
+
+/*
+ *	Insert: to insert a node into the correct position in a linked list
+ *	 INPUT: ptrNew a new node
+ *	OUTPUT: returns the new ptr ptrNew
+*/
+Tweet* Insert (Tweet* ptrNew)
+{
+    Tweet* ptrPrevious = NULL;  // new ptr
+
+    // if hte linked list is empty place the node at the begining
+    if ( isEmpty() )
+    {
+        ptrFirst = ptrNew;
+        ptrLast = ptrNew;
+        // printf("Empty\n");
+    }
+    // if the node belong before the first node
+    else if ( strcmp(ptrNew->user, ptrFirst->user) <= 0 )
+    {
+        AddBeginning (ptrNew);
+        // printf("1st: %s, %s\n", ptrNew->user, ptrFirst->user);
+    }
+    // if the new node belongs after the last node
+    else if ( strcmp(ptrNew->user, ptrLast->user) >= 0 )
+    {
+        AddEnd(ptrNew);
+        // printf("2nd\n");
+    }
+    // if the new node belongs somewhere inside the linked list
+    else
+    {
+        // printf("3rd\n");
+        ptrPrevious = ptrFirst;     // sets the temp pointer to the first position in the linked list
+        while ( strcmp(ptrPrevious->ptrNext->user, ptrNew->user) <= 0)  // if the next value is less then the new value, go to the next value
+        {
+            ptrPrevious = ptrPrevious->ptrNext; // increment through the linked list
+        }
+        ptrNew->ptrNext = ptrPrevious->ptrNext; // point the new node to the next node
+        ptrPrevious->ptrNext = ptrNew;          // point the previous node to the new node
+    }
+    return ptrNew;                              // return the new node
+}
+
+/*
+ *	PrintListRecursive: to display the linked list recursively
+ *		         INPUT: the first node to display
+ *		         UTPUT: display the list of nodes, return ptr to the current node
+*/
+Tweet* PrintListRecursive(Tweet* ptrCurrent)
+{
+    // base case
+    if (ptrCurrent != NULL)
+    {
+        // recursive call
+        printf("ID: %d \tCreated at: %s\n\"%s\"\nby %s\n\n", ptrCurrent->id, ptrCurrent->created_at, ptrCurrent->text, ptrCurrent->user);
+        PrintListRecursive(ptrCurrent->ptrNext);
+    }
+    
+    return ptrCurrent;
+}
+
+/*
+ *	AddEnd: add a node to the end of the linked list
+ *   INPUT: ptr to the new node
+ *	OUTPUT: ptr to the new node
+ */  
+Tweet* AddEnd (Tweet* ptrNew)
+{
+    if (isEmpty() )                 // if empty place at beginning
+    {
+        ptrFirst = ptrNew;
+        ptrLast = ptrNew;
+    }
+    else
+    {
+        ptrLast->ptrNext = ptrNew;  // point the last ptr to the new pointer
+        ptrLast = ptrNew;           // make the last pointer the new pointer
+    }
+
+    return ptrNew;
+}
+
+/*
+ *	ClearListRecursive: to free the memory used by the linked list
+ *		INPUT: the first node in the linked listq
+ *		OUTPUT: the first node 
+*/
+Tweet* ClearListRecursive(Tweet* ptrCurrent)
+{
+    // base case
+    if (ptrCurrent != NULL)
+    {
+        // recursive call
+        ClearListRecursive(ptrCurrent->ptrNext); // recursive call to find the end and then free each node backwards
+        free(ptrCurrent);
+    }
+
+    ptrFirst = NULL; // avoid dangling pointer
+    ptrLast = NULL;
+
+    return ptrCurrent;
+}
+
+/*
+ *	AddBegining: to add a node to the beginning of the list
+ *		INPUT: the node to be added
+ *		OUTPUT: a ptr to the new node
+*/
+Tweet* AddBeginning (Tweet* ptrNew)
+{
+    if ( isEmpty() )
+    {
+        ptrFirst = ptrNew;
+        ptrLast = ptrNew;
+    }
+    else
+    {
+        ptrNew->ptrNext = ptrFirst;     // point the new node to the current first node
+        ptrFirst = ptrNew;              // make the new node the new first node
+    }
+
+    return ptrNew;
+}
+
+/*
+ *	nStrip: removes '\n' from string
+ *		INPUT:  ptr to the string that needs stripping
+ *		OUTPUT:  removes '\n' if found and replaces it with '\0'
+*/
+int nStrip(char *strStrip)
+{
+    char *c;                                    // char *
+    if ( (c = strchr(strStrip, '\n')) != NULL)  // searches for a '\n'
+    {
+        *c = '\0';                              // replaces the '\n' with a '\0'
+    }
+
+    return 0;
+}
+
+/*
+ *	saveTweets: save the linked list to a file
+ *		INPUT: a filename and a pointe to the first ndoe
+ *		OUTPUT: -1 on failure, 0 on success
+*/
+int saveTweets (char fileName[100], Tweet* ptrCurrent)
+{
+    FILE* fp = fopen(fileName, "w");
+    if (fp == NULL)
+    {
+        return -1;
+    }
+
+    // a recursive helper function to save the linked list
+    saveTweetsRec(fp, ptrCurrent);
+
+    // // base case
+    // if (ptrCurrent != NULL)
+    // {
+    //     // recursive call
+    //     fprintf(fp, "%d\n%s\n%s\n%s\n", ptrCurrent->id, ptrCurrent->created_at, ptrCurrent->text, ptrCurrent->user);
+    //     saveTweets(fileName, ptrCurrent->ptrNext);
+    // }
+
+    fclose(fp);     // close the file
+
+    return 0;
+}
+
+/*
+ *	saveTwetsRec: a helper function to saveTweets to recursively save to a file
+ *		INPUT: a ptr to the file, a ptr to the current node
+ *		OUTPUT: data is outputted to file
+*/
+void saveTweetsRec(FILE* fp, Tweet* ptrCurrent)
+{
+    // base case
+    if (ptrCurrent != NULL)
+    {
+        // recursive call
+        fprintf(fp, "%d\n%s\n%s\n%s\n", ptrCurrent->id, ptrCurrent->created_at, ptrCurrent->user, ptrCurrent->text);
+        saveTweetsRec(fp, ptrCurrent->ptrNext);
+    }
+}
+]0;david11n@ltsp-amd64-alpha: ~/github/Scratch_Files/cs141/ass4[01;32mdavid11n@ltsp-amd64-alpha[00m:[01;34m~/github/Scratch_Files/cs141/ass4[00m$ cc assign4.c
+]0;david11n@ltsp-amd64-alpha: ~/github/Scratch_Files/cs141/ass4[01;32mdavid11n@ltsp-amd64-alpha[00m:[01;34m~/github/Scratch_Files/cs141/ass4[00m$ cat tweets.txt
+1
+Thu Mar 22 01:25:56 2018 UTC
+ben_is_ben
+Mic has obtained a copy of the letter that Barack and Michelle Obama sent to the students of Marjory Stoneman Douglas High School:
+2
+Thu Mar 22 01:26:06 2018 UTC
+ben_is_ben
+LOLz!
+3
+Thu Mar 22 01:26:10 2018 UTC
+ben_is_ben
+@you me?
+4
+Thu Mar 22 01:26:28 2018 UTC
+ben_is_ben
+Raps game is starting to feel like Leafs-Lightning from last night
+5
+Thu Mar 22 01:27:29 2018 UTC
+benjamin
+Also officially confirmed today: the pictures from inside the Syrian nuclear reactor obtained by tbe Mossad 
+6
+Thu Mar 22 01:27:53 2018 UTC
+benjamin
+This bit from the Zuckerberg interview on @Recode is why I am deeply uncomfortable with him and his entire company.
+7
+Thu Mar 22 01:57:54 2018 UTC
+hot-dog
+did you see that thing?
+8
+Thu Mar 22 01:58:15 2018 UTC
+hot-dog
+Testing's an entirely differnt line of text in this place
+9
+Thu Mar 22 02:00:35 2018 UTC
+hot-dog
+trying to write a tweet that looks about the same
+10
+Thu Mar 22 02:07:55 2018 UTC
+ice_t
+one more for good measure
+11
+Thu Mar 22 02:14:02 2018 UTC
+ben_the_hen
+coming at you!!!
+12
+Tue Apr  3 02:51:03 2018 UTC
+xavier
+Fire and fury
+13
+Tue Apr  3 02:51:33 2018 UTC
+aaron
+cheese is the best
+]0;david11n@ltsp-amd64-alpha: ~/github/Scratch_Files/cs141/ass4[01;32mdavid11n@ltsp-amd64-alpha[00m:[01;34m~/github/Scratch_Files/cs141/ass4[00m$ ./a.out
+]0;david11n@ltsp-amd64-alpha: ~/github/Scratch_Files/cs141/ass4[01;32mdavid11n@ltsp-amd64-alpha[00m:[01;34m~/github/Scratch_Files/cs141/ass4[00m$ cat twet[Kets.txt
+13
+Tue Apr  3 02:51:33 2018 UTC
+aaron
+cheese is the best
+4
+Thu Mar 22 01:26:28 2018 UTC
+ben_is_ben
+Raps game is starting to feel like Leafs-Lightning from last night
+3
+Thu Mar 22 01:26:10 2018 UTC
+ben_is_ben
+@you me?
+2
+Thu Mar 22 01:26:06 2018 UTC
+ben_is_ben
+LOLz!
+1
+Thu Mar 22 01:25:56 2018 UTC
+ben_is_ben
+Mic has obtained a copy of the letter that Barack and Michelle Obama sent to the students of Marjory Stoneman Douglas High School:
+11
+Thu Mar 22 02:14:02 2018 UTC
+ben_the_hen
+coming at you!!!
+5
+Thu Mar 22 01:27:29 2018 UTC
+benjamin
+Also officially confirmed today: the pictures from inside the Syrian nuclear reactor obtained by tbe Mossad 
+6
+Thu Mar 22 01:27:53 2018 UTC
+benjamin
+This bit from the Zuckerberg interview on @Recode is why I am deeply uncomfortable with him and his entire company.
+7
+Thu Mar 22 01:57:54 2018 UTC
+hot-dog
+did you see that thing?
+8
+Thu Mar 22 01:58:15 2018 UTC
+hot-dog
+Testing's an entirely differnt line of text in this place
+9
+Thu Mar 22 02:00:35 2018 UTC
+hot-dog
+trying to write a tweet that looks about the same
+10
+Thu Mar 22 02:07:55 2018 UTC
+ice_t
+one more for good measure
+12
+Tue Apr  3 02:51:03 2018 UTC
+xavier
+Fire and fury
+]0;david11n@ltsp-amd64-alpha: ~/github/Scratch_Files/cs141/ass4[01;32mdavid11n@ltsp-amd64-alpha[00m:[01;34m~/github/Scratch_Files/cs141/ass4[00m$ exit
+exit
+
+Script done on Tue 03 Apr 2018 12:28:09 PM EDT

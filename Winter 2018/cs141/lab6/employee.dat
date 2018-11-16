@@ -1,0 +1,9 @@
+ID FIRSTNAME LASTNAME
+10 Ben Davidson
+<<<<<<< HEAD
+20 John Doe
+50 Fred Smith
+=======
+20 Sam Smith
+30 John Doe
+>>>>>>> ac89ac1c3eb1f3e6dd362c4c62902c045f55864f

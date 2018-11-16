@@ -1,0 +1,6 @@
+             Default Format: 56 -45 -999999 -12334 
+Decimal Separator Formatter: 56 -45 -999,999 -12,334 
+          Accounting Format: 56 (45) (999999) (12334) 
+              Base 2 Format: 111000 -101101 -11110100001000111111 -11000000101110 
+              Base 8 Format: 70 -55 -3641077 -30056 
+             Base 16 Format: 38 -2d -f423f -302e 

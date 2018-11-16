@@ -1,0 +1,28 @@
+Script started on Thu 11 Jan 2018 03:48:28 PM EST
+]0;david11n@ltsp-amd64-charlie: ~/Documents/cs141/lab1[01;32mdavid11n@ltsp-amd64-charlie[00m:[01;34m~/Documents/cs141/lab1[00m$ cater[K[K exercise0.c
+/* DAVIDSON, Benjamin
+   ID: 104924033
+   Lab Exercise #0
+   Date: January 11, 2018
+   Purpose: This is a sample C program used for practice.
+*/
+
+#include <stdio.h>
+
+/* Main program routine */
+
+int main()
+{
+     printf ("My name is Benjamin Davidson\n");
+     printf ("This is my first C program.\n");
+
+     return 0;
+}
+]0;david11n@ltsp-amd64-charlie: ~/Documents/cs141/lab1[01;32mdavid11n@ltsp-amd64-charlie[00m:[01;34m~/Documents/cs141/lab1[00m$ cc exerv[Kcise0.c
+]0;david11n@ltsp-amd64-charlie: ~/Documents/cs141/lab1[01;32mdavid11n@ltsp-amd64-charlie[00m:[01;34m~/Documents/cs141/lab1[00m$ ./a.out
+My name is Benjamin Davidson
+This is my first C program.
+]0;david11n@ltsp-amd64-charlie: ~/Documents/cs141/lab1[01;32mdavid11n@ltsp-amd64-charlie[00m:[01;34m~/Documents/cs141/lab1[00m$ exit
+exit
+
+Script done on Thu 11 Jan 2018 03:48:53 PM EST

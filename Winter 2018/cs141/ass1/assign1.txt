@@ -1,0 +1,31 @@
+Script started on Tue 30 Jan 2018 11:55:57 PM EST
+]0;david11n@ltsp-amd64-alpha: ~/github/Scratch_Files/cs141/ass1[01;32mdavid11n@ltsp-amd64-alpha[00m:[01;34m~/github/Scratch_Files/cs141/ass1[00m$ gcc -lm assign1.c
+]0;david11n@ltsp-amd64-alpha: ~/github/Scratch_Files/cs141/ass1[01;32mdavid11n@ltsp-amd64-alpha[00m:[01;34m~/github/Scratch_Files/cs141/ass1[00m$ ./a.out
+6
+24 1 4358 754 305 794
+81 0 6714 792 891 792 
+4176
+]0;david11n@ltsp-amd64-alpha: ~/github/Scratch_Files/cs141/ass1[01;32mdavid11n@ltsp-amd64-alpha[00m:[01;34m~/github/Scratch_Files/cs141/ass1[00m$ ./a.out
+10
+1 53 876 1234 56785 45 94 27 5 333
+0 81 891 7803 891 9 54 54 0 0 
+3087
+]0;david11n@ltsp-amd64-alpha: ~/github/Scratch_Files/cs141/ass1[01;32mdavid11n@ltsp-amd64-alpha[00m:[01;34m~/github/Scratch_Files/cs141/ass1[00m$ ./a.out
+7
+1765 2394 1725 9341 2222 9832 2134
+6093 8352 6453 2097 0 3447 8712 
+7902
+]0;david11n@ltsp-amd64-alpha: ~/github/Scratch_Files/cs141/ass1[01;32mdavid11n@ltsp-amd64-alpha[00m:[01;34m~/github/Scratch_Files/cs141/ass1[00m$ ./a.out
+4 
+123123 6675 23 5
+891891 909 9 0 
+198198
+]0;david11n@ltsp-amd64-alpha: ~/github/Scratch_Files/cs141/ass1[01;32mdavid11n@ltsp-amd64-alpha[00m:[01;34m~/github/Scratch_Files/cs141/ass1[00m$ ./a.out
+3
+985245 56 4
+656244 9 0 
+442656
+]0;david11n@ltsp-amd64-alpha: ~/github/Scratch_Files/cs141/ass1[01;32mdavid11n@ltsp-amd64-alpha[00m:[01;34m~/github/Scratch_Files/cs141/ass1[00m$ exit
+exit
+
+Script done on Tue 30 Jan 2018 11:59:01 PM EST

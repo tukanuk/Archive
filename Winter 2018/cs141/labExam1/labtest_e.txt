@@ -1,0 +1,171 @@
+Script started on Tue 30 Jan 2018 03:19:24 PM EST
+]0;david11n@ltsp-amd64-charlie: ~/github/Scratch_Files/cs141/labExam1[01;32mdavid11n@ltsp-amd64-charlie[00m:[01;34m~/github/Scratch_Files/cs141/labExam1[00m$ exit./a.out[2Pls -lcc labtest.cat labtest.c [A
+/* Name: labtest.c
+   Purpose: Lab Exam #1
+   Author: Ben Davidson
+           104924033
+   CS141 Lab Section
+   Date: January 30, 2018
+*/
+
+#include <stdio.h>
+
+#define ROWS 20
+#define COLS 20
+
+/*** Function Protoype ***/
+
+void Print(float A[][COLS], int r, int c);
+void MinMerge (float A[][COLS], float B[][COLS], float C[][COLS], int r, int c);
+
+void main ()
+{
+  int p, q ;
+  int rows, cols;
+  float A[ROWS][COLS], B[ROWS][COLS], C[ROWS][COLS];
+
+  printf("Enter # of rows, # of cols: " ) ;
+  scanf( "%d%d", &rows, &cols ) ;
+
+  for ( p = 0 ; p < rows ; p++ )
+  {
+    printf(" Enter %d column values for row %d:\n", cols, p+1);
+    for ( q = 0; q < cols; q++)
+    {
+      scanf("%f", &A[p][q] );
+    }
+  } // TODO: Repeat this loop to obtain the contents of B[][]
+
+  for ( p = 0 ; p < rows ; p++ )
+  {
+    printf(" Enter %d column values for row %d:\n", cols, p+1);
+    for ( q = 0; q < cols; q++)
+    {
+      scanf("%f", &B[p][q] );
+    }
+  }
+
+  Print ( A, rows, cols );
+  Print ( B, rows, cols );
+  MinMerge (A, B, C, rows, cols ) ;
+  Print ( C, rows, cols ) ;
+
+}
+
+/*
+ *	Print: prints a 2D array
+ *		INPUT: The array to print and its number of rows and columns
+ *		OUTPUT: An 2D array
+*/
+void Print(float A[][COLS], int r, int c)
+{
+  int current_r; // counter to track the current row
+  int current_c; // counter to track the current column
+
+  for (current_r = 0; current_r < r; current_r++)
+  {
+    for (current_c = 0; current_c < c; current_c++)
+    {
+      // setting up a tab format output
+      printf("%6.2f", A[current_r][current_c]);
+    }
+
+    printf("\n");
+  }
+  printf("\n\n");
+}
+
+/*
+ *	MinMerg: compares two arrays and foind the smallest values in each position
+ *		INPUT: Two arrays (A dn B) as source data, array C to store the results
+             the number of rows and columns in the arrays
+ *		OUTPUT: An 2D array (C) of the results
+*/
+void MinMerge (float A[][COLS], float B[][COLS], float C[][COLS], int r, int c)
+{
+  int current_r; // counter to track the current row
+  int current_c; // counter to track the current column
+
+  for (current_r = 0; current_r < r; current_r++)
+  {
+    for (current_c = 0; current_c < c; current_c++)
+    {
+      // determines if A or B is the smaller value
+      if (A[current_r][current_c] < B[current_r][current_c])
+      {
+          // if A is smaller store the min value in array C
+          C[current_r][current_c] = A[current_r][current_c];
+      } else
+      {
+        // if B is smaller or equal
+        C[current_r][current_c] = B[current_r][current_c];
+      }
+    }
+  }
+}
+]0;david11n@ltsp-amd64-charlie: ~/github/Scratch_Files/cs141/labExam1[01;32mdavid11n@ltsp-amd64-charlie[00m:[01;34m~/github/Scratch_Files/cs141/labExam1[00m$ cat labtest.c [A[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[Cexit[K
+[K[A[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C./a.out[2Pls -lcc labtest.c
+]0;david11n@ltsp-amd64-charlie: ~/github/Scratch_Files/cs141/labExam1[01;32mdavid11n@ltsp-amd64-charlie[00m:[01;34m~/github/Scratch_Files/cs141/labExam1[00m$ ls -l
+total 43
+-rwxr-xr-x 1 david11n temp  8856 Jan 30 15:19 [0m[01;32ma.out[0m
+-rwxr-xr-x 1 david11n temp 13256 Jan 30 12:23 [01;32mlabExam1[0m
+-rw-r--r-- 1 david11n temp  5027 Jan 30 12:19 labExam1.c
+-rwxr-xr-x 1 david11n temp  8856 Jan 30 15:08 [01;32mlabtest[0m
+-rw-r--r-- 1 david11n temp  2535 Jan 30 15:19 labtest.c
+-rw-r--r-- 1 david11n temp     0 Jan 30 15:19 labtest_e.txt
+-rw-r--r-- 1 david11n temp    30 Jan 30 12:19 tempCodeRunnerFile.c
+]0;david11n@ltsp-amd64-charlie: ~/github/Scratch_Files/cs141/labExam1[01;32mdavid11n@ltsp-amd64-charlie[00m:[01;34m~/github/Scratch_Files/cs141/labExam1[00m$ \[K./a.out
+Enter # of rows, # of cols: 2 3
+ Enter 3 column values for row 1:
+1 2 3
+ Enter 3 column values for row 2:
+4 5 6
+ Enter 3 column values for row 1:
+2 4 5
+ Enter 3 column values for row 2:
+1 2 3
+  1.00  2.00  3.00
+  4.00  5.00  6.00
+
+
+  2.00  4.00  5.00
+  1.00  2.00  3.00
+
+
+  1.00  2.00  3.00
+  1.00  2.00  3.00
+
+
+]0;david11n@ltsp-amd64-charlie: ~/github/Scratch_Files/cs141/labExam1[01;32mdavid11n@ltsp-amd64-charlie[00m:[01;34m~/github/Scratch_Files/cs141/labExam1[00m$ ./a.out
+Enter # of rows, # of cols: 3 2
+ Enter 2 column values for row 1:
+4 5
+ Enter 2 column values for row 2:
+6 7
+ Enter 2 column values for row 3:
+9 87 
+ Enter 2 column values for row 1:
+3 55
+ Enter 2 column values for row 2:
+1 7
+ Enter 2 column values for row 3:
+4 6
+  4.00  5.00
+  6.00  7.00
+  9.00  8.00
+
+
+  3.00 55.00
+  1.00  7.00
+  4.00  6.00
+
+
+  3.00  5.00
+  1.00  7.00
+  4.00  6.00
+
+
+]0;david11n@ltsp-amd64-charlie: ~/github/Scratch_Files/cs141/labExam1[01;32mdavid11n@ltsp-amd64-charlie[00m:[01;34m~/github/Scratch_Files/cs141/labExam1[00m$ exit
+exit
+
+Script done on Tue 30 Jan 2018 03:20:16 PM EST

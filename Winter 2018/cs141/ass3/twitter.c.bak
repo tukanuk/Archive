@@ -1,0 +1,175 @@
+/*
+ * Name: twitter.c
+ * Purpose: Assigment 3: Simple Tweet
+ * Author: Ben Davidson
+ *         104924033
+ * CS141 
+ * Date: 0317-2018 16:11 
+ */
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <time.h>
+#include <string.h>
+
+#define MAX_TWEETS 200
+
+typedef struct {
+    
+    int id; // unique id for tweet
+    char created_at[51]; // UTC time and date
+    char text[141]; // the body of the tweet
+    char user[21]; // the user name
+
+} Tweet;
+
+/* Prototype */
+int basicMenu (char *name, Tweet *ptrTimeline);
+int tweet(char *username, Tweet *ptrTimeline);
+int searchTweets(char *username);
+int displayTweets(char *username);
+int saveTweets(char *username);
+int loadTweets(char *username);
+
+int getTime();
+
+int main ()
+{
+    Tweet timeline[MAX_TWEETS];
+
+    int choice = 0;
+    char username[21];
+
+    printf("Welcome to Simple Twitter\n");
+    printf("Please enter your user name: ");
+    scanf("%s", username);
+    
+
+    do 
+    {
+        choice = basicMenu(username, timeline);
+    } while (choice != -1);
+    
+    return 0;
+}
+
+/*
+ *	tweet: to write a tweet with metadata
+ *		INPUT: username and the the Tweet timeline
+ *		OUTPUT: a tweet in the timeline array with an id, date/time, and user id
+*/
+int tweet(char *username, Tweet *ptrTimeline)
+{
+    char tweet[250];
+    char time[51];
+
+    printf("What's happening? ");
+    scanf("%249s", tweet);
+
+    while (strlen(tweet) > 140)
+    {
+        printf("140 characters max. Try again: ");
+        scanf("%s", tweet);
+    }
+
+    getTime();
+
+
+    return 0;
+}
+
+int getTime()
+{
+    char buff[150];
+    time_t currTime;
+    struct tm *loc_time;
+
+    currTime = time (NULL);
+
+    loc_time = localtime (&currTime);
+
+    printf("%s", asctime (loc_time) );
+
+    strftime (buff, 150, "Today is %A.\n", loc_time );
+    fputs (buff, stdout);
+
+    strftime (buff, 150, "Time is %I: %M.\n", loc_time);
+    fputs(buff, stdout);
+
+    return 0;
+
+
+}
+
+int searchTweets(char *username)
+{
+    return 0;
+}
+
+int displayTweets(char *username)
+{
+    return 0;
+}
+
+int saveTweets(char *username)
+{
+    return 0;
+}
+
+int loadTweets(char *username)
+{
+    return 0;
+}
+
+
+
+/* basicMenu: A basic menu to select a function 
+   INPUT: none
+   OUTPUT: returns 0 to keep the program going, returns 1 to exit the program
+*/
+int basicMenu (char *name, Tweet *ptrTimeline)
+{
+  //system("clear");
+
+  int choice = 0; // choose a function
+  
+  printf("\n\n");
+  printf("     ******************************************* \n");
+  printf("     *             %-21s       * \n", name);
+  printf("     *             Simple Twitter              * \n");
+  printf("     * 1. Tweet              * 2. Search       * \n");
+  printf("     * 3. Display tweets     * 4. Save tweets  * \n");
+  printf("     * 5. Load tweets        * 6. Quit         * \n");
+  printf("     ******************************************** \n");
+  printf("                  >> ");
+  
+  scanf("%d", &choice); //first menu choice
+
+  if (choice == 6 )
+  {
+      return -1;
+  }
+
+  switch (choice)
+  {
+    case 1: 
+            tweet(name, ptrTimeline);
+            break;
+    case 2: 
+            searchTweets(name);
+            break;
+    case 3:
+            displayTweets(name);
+            break;
+    case 4: 
+            saveTweets(name);
+            break;
+    case 5:
+            loadTweets(name);
+            break;
+    case 6:
+            break;
+  }
+  
+  return 0;
+}

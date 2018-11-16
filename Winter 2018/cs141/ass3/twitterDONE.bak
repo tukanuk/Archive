@@ -1,0 +1,388 @@
+/*
+ * Name: twitter.c
+ * Purpose: Assigment 3: Simple Tweet
+ * Author: Ben Davidson
+ *         104924033
+ * CS141 
+ * Date: 0317-2018 16:11 
+ */
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <time.h>
+#include <string.h>
+
+#define MAX_TWEETS 200
+#define DEBUG 0
+
+/*** Global colours ***/
+const char *PINK = "\033[38;5;197;4m";
+const char *NORM = "\033[0m";
+
+typedef struct
+{
+
+    int id;              // unique id for tweet
+    char created_at[51]; // UTC time and date
+    char text[141];      // the body of the tweet
+    char user[21];       // the user name
+
+} Tweet;
+
+/* Prototype */
+int basicMenu(char *name, int *ID, Tweet *ptrTimeline);
+int tweet(char *username, int *ID, Tweet *ptrTimeline);
+int searchTweets(Tweet *ptrTimeline, int *ID);
+int displayTweets(Tweet *ptrTimeline, int *ID);
+int saveTweets(Tweet *ptrTimeline, int *ID);
+int loadTweets(Tweet *ptrTimeline, int *ID);
+
+int getTime(char *ts);
+int displayTweet(Tweet *ptrTweet, int tempID);
+int nStrip(char *strStrip);
+
+int main()
+{
+    system("clear");
+
+    Tweet timeline[MAX_TWEETS];
+
+    int choice = 0;
+    char username[21];
+    char buffer[80];
+    //int c;
+    
+    int tweetID = 1;             // sets base tweet ID
+    int *ptrTweetID = &tweetID;    // ptr for tweet ID
+
+    printf("  Welcome to Simple Twitter\n");
+    printf("  Please enter your user name: ");
+
+    fgets(buffer, sizeof buffer, stdin);        // captures line of input for username
+
+    if (strlen(buffer) > 20)                    // checks for length
+    {
+        printf("  Your username was %lu characters long.\n", strlen(buffer) );
+        printf("  20 characters max please: ");
+        fgets(buffer, sizeof buffer, stdin);
+
+    }
+
+    char *search = buffer; 
+    while ( (search = strchr(search, ' ') ) != NULL )
+    {
+        *search = '_';
+        ++search;
+    }
+    
+    sscanf(buffer, "%20s", username);
+
+    do
+    {
+        choice = basicMenu(username, ptrTweetID, timeline);
+    } while (choice != -1);
+
+    return 0;
+}
+
+/*
+ *	tweet: to write a tweet with metadata
+ *		INPUT: username and the the Tweet timeline
+ *		OUTPUT: a tweet in the timeline array with an id, date/time, and user id
+*/
+int tweet(char *username, int *ptrID, Tweet *ptrTimeline)
+{
+    char buff[250];
+    char tweet[141];
+    char timeStamp[51];
+    char *ptrTimeStamp = timeStamp;
+    
+
+    printf("  What's happening? ");
+    fgets(buff, sizeof buff, stdin);
+    //sscanf(buff, "%s", tweet);
+
+    while (strlen(buff) > 140)
+    {
+        printf("140 characters max. Try again: ");
+        fgets(buff, sizeof buff, stdin);
+        //scanf("%s", tweet);
+    }
+
+
+    getTime(ptrTimeStamp);
+    strncpy(tweet, buff, 140);
+
+    // removes '\n' from string
+    char *c; 
+    if ( (c = strchr(tweet, '\n')) != NULL)
+    {
+        *c = '\0';
+    }
+
+    //tweet[5] = '\0';
+
+    // printf("tweet: %s", tweet);
+    // printf(" at %s", timeStamp);
+    // printf(" by %s\n", username);
+    
+    //printf("%s on %s by %s", tweet, timeStamp, username);
+
+    // copy tweet data into struc
+    int tempID = *ptrID - 1;
+
+    ptrTimeline[tempID].id = (*ptrID)++;
+    strcpy(ptrTimeline[tempID].created_at, timeStamp);
+    strcpy(ptrTimeline[tempID].text, tweet);
+    strcpy(ptrTimeline[tempID].user, username);
+    
+
+    //printf("%s on %s by %s", tweet, timeStamp, username);
+
+    displayTweet(ptrTimeline, tempID);
+
+
+    return 0;
+}
+
+int displayTweet(Tweet *ptrTweet, int tempID)
+{
+
+    // temp file for a formatted tweet display. idea from fgets man page
+    FILE* tmpF = tmpfile();
+    fputs(ptrTweet[tempID].text, tmpF);
+    rewind(tmpF);
+    char buff[37];
+    
+
+    printf("\n\n");
+    printf("  \u250F\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2513\n");
+    printf("  \u2503  \033[38;5;197;4m@%-36s\033[0m  \u2503\n", ptrTweet[tempID].user);
+
+    while (fgets(buff, sizeof buff, tmpF) != NULL)
+    {
+        printf("  \u2503  %-37s  \u2503\n", buff);
+    }
+    // TODO: add user id
+    printf("  \u2503  \033[38;5;213m#%-3d %32s  \033[0m\u2503\n", ptrTweet[tempID].id, ptrTweet[tempID].created_at);
+    printf("  \u2517\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u251B\n");
+
+    return 0;
+}
+int getTime(char *ts)
+{
+    char buff[150];
+    time_t currTime;
+    struct tm *utc_time;
+
+    currTime = time(NULL);
+
+    utc_time = gmtime(&currTime);
+
+    strftime(ts, 51, "%c UTC", utc_time);
+    //printf("%s\n", ts);
+
+    return 0;
+}
+
+int searchTweets(Tweet *ptrTimeline, int *ID)
+{
+    int counter = 0; // counts the matches
+    char buff[255];
+    printf("\n  Enter search text: ");
+    fgets(buff, sizeof buff, stdin);
+    nStrip(buff);
+
+    for ( int i = 0 ; i < *ID - 1 ; i++)
+    {
+        if ( strstr(ptrTimeline[i].text, buff) != NULL)
+        {
+            displayTweet(ptrTimeline, i);
+            counter++;
+        }
+    }
+
+    printf("\n  %s%s%s was found %d time(s).\n", PINK, buff, NORM, counter);
+
+    return 0;
+}
+
+int displayTweets(Tweet *ptrTimeline, int *ID)
+{
+    printf("\n  Displaying \033[38;5;197m%d\033[0m tweets: ", *ID - 1);
+    for (int i = 0 ; i < *ID - 1 ; i++)
+    {
+        displayTweet(ptrTimeline, i);
+    }
+
+    return 0;
+}
+
+int saveTweets(Tweet *ptrTimeline, int *ID)
+{
+    char filename[255];
+    printf("\n  Filename: ");
+    fgets(filename, sizeof filename, stdin);
+
+    // removes '\n' from string
+    char *c; 
+    if ( (c = strchr(filename, '\n')) != NULL)
+    {
+        *c = '\0';
+    }
+    
+    // TODO: add file check logic
+    FILE* tweetFile = fopen(filename, "w");
+
+    for (int i = 0 ; i < *ID - 1 ; i++)
+    {
+        fprintf(tweetFile, "%d\n", ptrTimeline[i].id);
+        fprintf(tweetFile, "%s\n", ptrTimeline[i].created_at);
+        fprintf(tweetFile, "%s\n", ptrTimeline[i].user);
+        fprintf(tweetFile, "%s\n", ptrTimeline[i].text);
+    }
+
+    printf("  %d tweet(s) saved in the file \"%s\"", *ID, filename);
+    
+    fclose(tweetFile);
+
+    return 0;
+}
+
+int loadTweets(Tweet *ptrTimeline, int *ID)
+{
+    char filename[255];
+    printf("\n  Filename: ");
+    fgets(filename, sizeof filename, stdin);
+
+    // removes '\n' from string
+    char *c; 
+    if ( (c = strchr(filename, '\n')) != NULL)
+    {
+        *c = '\0';
+    }
+    
+    // TODO: add file check logic
+    FILE* tweetFile = fopen(filename, "r");
+    if(!tweetFile) 
+    {
+        perror("File opening failed");
+        return EXIT_FAILURE;
+    }
+
+    // Temp variables for loading data
+    int tmpID = 0;
+    // char *ldTime;
+    // char *ldName;
+    // char *ldTweet;
+    char buff[200];
+
+    while (fgets(buff, sizeof buff, tweetFile)!= NULL)
+    {
+        // TODO: scan through file looking for EOF
+        //fgets(buff, sizeof buff, tweetFile);
+        nStrip(buff);
+        ptrTimeline[tmpID].id = atoi(buff);
+        if (DEBUG) printf("%s\n", buff);
+
+        fgets(buff, sizeof buff, tweetFile);
+        nStrip(buff);
+        strncpy(ptrTimeline[tmpID].created_at, buff, 51);
+        if (DEBUG) printf("%s\n", buff);
+
+        fgets(buff, sizeof buff, tweetFile);
+        nStrip(buff);
+        strncpy(ptrTimeline[tmpID].user, buff, 21);
+        if (DEBUG) printf("%s\n", buff);
+
+        fgets(buff, sizeof buff, tweetFile);
+        nStrip(buff);
+        strncpy(ptrTimeline[tmpID].text, buff, 141);
+        if (DEBUG) printf("%s\n", buff);
+
+        displayTweet(ptrTimeline, tmpID);
+        
+        tmpID++;
+    }
+
+    
+    *ID = tmpID;
+    
+    printf("   %s%d%s tweet(s) were sucessfully loaded!", PINK, tmpID, NORM);
+
+    (*ID)++;
+
+    fclose(tweetFile);
+
+    return 0;
+}
+
+/* basicMenu: A basic menu to select a function 
+   INPUT: none
+   OUTPUT: returns 0 to keep the program going, returns 1 to exit the program
+*/
+int basicMenu(char *name, int *ID, Tweet *ptrTimeline)
+{
+    //system("clear");
+
+    int choice = 0; // choose a function
+    int c; // used with getchar to consume \n
+
+    printf("\n\n");
+    printf("  \u250F\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2513\n");
+    printf("  \u2503             Hey \033[38;5;197m%-21s%s   \u2503 \n", name, NORM);
+    printf("  \u2503             Welcome to                  \u2503 \n");
+    printf("  \u2503             Simple Twitter              \u2503 \n");
+    printf("  \u2503                                         \u2503 \n");
+    printf("  \u2503 \u2460 Tweet              \u2461 Search           \u2503 \n");
+    printf("  \u2503 \u2462 Display tweets     \u2463 Save tweets      \u2503 \n");
+    printf("  \u2503 \u2464 Load tweets        \u2465 Quit             \u2503 \n");
+    printf("  \u2517\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u251B\n");
+
+    printf("                  >> ");
+
+    scanf("%d", &choice); //first menu choice
+    while ( (c = getchar()) != '\n' && c != EOF);
+
+    if (choice == 6)
+    {
+        return -1;
+    }
+
+    switch (choice)
+    {
+    case 1:
+        tweet(name, ID, ptrTimeline);
+        break;
+    case 2:
+        searchTweets(ptrTimeline, ID);
+        break;
+    case 3:
+        displayTweets(ptrTimeline, ID);
+        break;
+    case 4:
+        saveTweets(ptrTimeline, ID);
+        break;
+    case 5:
+        loadTweets(ptrTimeline, ID);
+        break;
+    case 6:
+        break;
+    default:
+        break;
+    }
+
+    return 0;
+}
+
+// removes '\n' from string
+int nStrip(char *strStrip)
+{
+    char *c; 
+    if ( (c = strchr(strStrip, '\n')) != NULL)
+    {
+        *c = '\0';
+    }
+
+    return 0;
+}
